@@ -8,7 +8,8 @@ import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
 import QRBarcodeModal from "@/components/qr-barcode-modal";
 import PricingHistoryChart from "@/components/pricing-history-chart";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 
 interface User {
   id: string;
@@ -281,70 +282,95 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
     );
   }
 
+  // Chart configuration for shadcn
+  const chartConfig: ChartConfig = {
+    ...(hasSupplierCost && {
+      "Supplier Cost": {
+        label: "Supplier Cost",
+        color: "#3b82f6",
+      },
+    }),
+    ...(hasCost && {
+      "Cost": {
+        label: "Cost",
+        color: "#10b981",
+      },
+    }),
+    ...(hasSRP && {
+      "SRP": {
+        label: "SRP",
+        color: "#f59e0b",
+      },
+    }),
+  };
+
   return (
     <div className="space-y-4">
       <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer config={chartConfig} className="h-full">
           <LineChart 
             data={chartData} 
             margin={{ top: 5, right: 20, left: 0, bottom: 20 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="date" 
-              stroke="#6b7280"
-              style={{ fontSize: "12px" }}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
               angle={-45}
               textAnchor="end"
               height={60}
             />
             <YAxis 
-              stroke="#6b7280"
-              style={{ fontSize: "12px" }}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
               tickFormatter={(value) => `$${value}`}
               domain={[0, maxValue * 1.1 || 1000]}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
-              }}
-              formatter={(value: any) => value !== null ? `$${Number(value).toLocaleString()}` : "N/A"}
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent 
+                formatter={(value: any) => value !== null ? `$${Number(value).toLocaleString()}` : "N/A"}
+              />}
             />
-            <Legend />
+            <ChartLegend content={<ChartLegendContent />} />
             {hasSupplierCost && (
               <Line
                 type="monotone"
                 dataKey="Supplier Cost"
-                stroke="#3b82f6"
+                stroke="var(--color-Supplier Cost)"
                 strokeWidth={2}
-                dot={{ r: 5, fill: "#3b82f6" }}
+                dot={{ r: 5, fill: "var(--color-Supplier Cost)" }}
                 activeDot={{ r: 7 }}
+                connectNulls={false}
               />
             )}
             {hasCost && (
               <Line
                 type="monotone"
                 dataKey="Cost"
-                stroke="#10b981"
+                stroke="var(--color-Cost)"
                 strokeWidth={2}
-                dot={{ r: 5, fill: "#10b981" }}
+                dot={{ r: 5, fill: "var(--color-Cost)" }}
                 activeDot={{ r: 7 }}
+                connectNulls={false}
               />
             )}
             {hasSRP && (
               <Line
                 type="monotone"
                 dataKey="SRP"
-                stroke="#f59e0b"
+                stroke="var(--color-SRP)"
                 strokeWidth={2}
-                dot={{ r: 5, fill: "#f59e0b" }}
+                dot={{ r: 5, fill: "var(--color-SRP)" }}
                 activeDot={{ r: 7 }}
+                connectNulls={false}
               />
             )}
           </LineChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </div>
       <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700">
         {productType === "for-sale" ? (

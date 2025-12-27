@@ -148,6 +148,7 @@ export default function LoginPage() {
               <button
                 onClick={() => router.push("/")}
                 className="text-2xl font-bold text-gray-900 dark:text-white hover:opacity-80 transition-opacity"
+                suppressHydrationWarning
               >
                 QSales
               </button>
@@ -215,6 +216,7 @@ export default function LoginPage() {
                     : "border-gray-300 dark:border-gray-600"
                     } bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors`}
                   placeholder="you@example.com"
+                  suppressHydrationWarning
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -242,6 +244,7 @@ export default function LoginPage() {
                     : "border-gray-300 dark:border-gray-600"
                     } bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors`}
                   placeholder="••••••••"
+                  suppressHydrationWarning
                 />
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -255,6 +258,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  suppressHydrationWarning
                 >
                   Forgot password?
                 </button>
@@ -265,6 +269,7 @@ export default function LoginPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                suppressHydrationWarning
               >
                 {isSubmitting ? "Signing In..." : "Sign In"}
               </button>
@@ -277,6 +282,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => router.push("/signup")}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                    suppressHydrationWarning
                   >
                     Sign Up
                   </button>
