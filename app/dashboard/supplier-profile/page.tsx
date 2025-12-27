@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Edit, Save, X, Plus, Building2, Phone, Mail, MapPin, Star, Facebook, MessageCircle, Send, Instagram, Search } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -44,7 +44,7 @@ interface Product {
   type: "operational" | "for-sale" | "package";
 }
 
-export default function SupplierProfilePage() {
+function SupplierProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supplierId = searchParams.get("id");
@@ -672,6 +672,18 @@ export default function SupplierProfilePage() {
         }}
       />
     </SidebarProvider>
+  );
+}
+
+export default function SupplierProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      </div>
+    }>
+      <SupplierProfileContent />
+    </Suspense>
   );
 }
 

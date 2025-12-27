@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, memo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, QrCode, Barcode, Package, DollarSign, MapPin, Calendar, Box, Tag, Building2, Hash, Edit, Save, X, TrendingUp } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -401,7 +401,7 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
   );
 };
 
-export default function EquipmentDetailsPage() {
+function EquipmentDetailsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
@@ -935,5 +935,17 @@ export default function EquipmentDetailsPage() {
         storedCode={storedCode}
       />
     </SidebarProvider>
+  );
+}
+
+export default function EquipmentDetailsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      </div>
+    }>
+      <EquipmentDetailsContent />
+    </Suspense>
   );
 }
