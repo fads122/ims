@@ -29,7 +29,7 @@ import {
 const menuItems = [
   { id: "home", label: "Home", icon: Home, href: "/dashboard" },
   { id: "product-list", label: "Product List", icon: List, href: "/dashboard/product-list" },
-  { id: "suppliers", label: "Suppliers", icon: Truck, href: "/dashboard/suppliers" },
+  { id: "suppliers", label: "Suppliers", icon: Truck, href: "/dashboard/supplier-list" },
   { id: "project-proposals", label: "Project Proposals", icon: FileText, href: "/dashboard/project-proposals" },
   { id: "client-directory", label: "Client Directory", icon: Users, href: "/dashboard/client-directory" },
   { id: "sales-order", label: "Sales Order", icon: ShoppingCart, href: "/dashboard/sales-order" },

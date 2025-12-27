@@ -7,7 +7,6 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import TopHeader from "@/components/top-header";
 import MetricsGrid from "@/components/metrics-grid";
 import InventoryTable from "@/components/inventory-table";
-import { AnimatedBackground } from "@/core/components/AnimatedBackground";
 
 interface User {
   id: string;
@@ -43,7 +42,6 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
-        <AnimatedBackground />
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -55,19 +53,19 @@ export default function Dashboard() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
-        <AnimatedBackground />
+      <div className="flex h-screen w-full bg-gray-50 dark:bg-gray-900 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
-          <div className="flex-1 overflow-auto">
-            <div className="p-6 lg:p-8 space-y-8">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                  Inventory Dashboard
+          <div className="flex-1 overflow-auto bg-gray-50/50 dark:bg-gray-950">
+            <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+              {/* Header Section */}
+              <div className="mb-6">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
+                  Dashboard
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  Manage and monitor your inventory in real-time
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Overview of your inventory management system
                 </p>
               </div>
 

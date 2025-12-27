@@ -6,7 +6,6 @@ import { Plus, Search, Filter } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
-import { AnimatedBackground } from "@/core/components/AnimatedBackground";
 import ProductTable from "@/components/product-table";
 import AddProductModal from "@/components/add-product-modal";
 
@@ -47,7 +46,6 @@ export default function ProductListPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
-        <AnimatedBackground />
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -60,7 +58,6 @@ export default function ProductListPage() {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
-        <AnimatedBackground />
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
