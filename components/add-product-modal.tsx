@@ -29,11 +29,68 @@ interface AddProductModalProps {
 
 type ProductType = "operational" | "for-sale" | "package";
 
+interface OperationalEquipmentFormData {
+  productType: string;
+  name: string;
+  brand: string;
+  model: string;
+  quantity: number;
+  boxQuantity: number;
+  serialNumber: string;
+  dateAcquired: string;
+  condition: string;
+  damageStatus: string;
+  images: string[];
+}
+
+interface ForSaleProductFormData {
+  category: string;
+  productModel: string;
+  productBrand: string;
+  supplier: string;
+  supplierCost: number;
+  srp: number;
+  quantity: number;
+  boxQuantity: number;
+  location: string;
+  condition: string;
+  description: string;
+  brochureUrl: string;
+  images: string[];
+}
+
+interface PackageItem {
+  itemCategory: string;
+  itemModel: string;
+  itemBrand: string;
+  itemQuantity: number;
+  itemCondition: string;
+}
+
+interface PackageBundleFormData {
+  packageName: string;
+  packageCategory: string;
+  packageDescription: string;
+  ownershipType: string;
+  packageItems: PackageItem[];
+  supplier: string;
+  packageCost: number;
+  packageSrp: number;
+  packageQuantity: number;
+  location: string;
+  condition: string;
+  boxQuantity: number;
+  brochureUrl: string;
+  images: string[];
+}
+
+type FormData = OperationalEquipmentFormData | ForSaleProductFormData | PackageBundleFormData;
+
 export default function AddProductModal({ isOpen, onClose, onProductAdded }: AddProductModalProps) {
   const [productType, setProductType] = useState<ProductType>("operational");
   const [formInstances, setFormInstances] = useState<number[]>([0]); // Array of form IDs
   const [loading, setLoading] = useState(false);
-  const [formDataMap, setFormDataMap] = useState<Map<number, any>>(new Map());
+  const [formDataMap, setFormDataMap] = useState<Map<number, FormData>>(new Map());
 
   // Reset when modal opens/closes
   useEffect(() => {
@@ -59,7 +116,7 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
     setFormDataMap(newMap);
   };
 
-  const handleFormDataChange = useCallback((id: number, data: any) => {
+  const handleFormDataChange = useCallback((id: number, data: FormData) => {
     setFormDataMap((prevMap) => {
       const newMap = new Map(prevMap);
       newMap.set(id, data);
@@ -67,63 +124,66 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
     });
   }, []);
 
-  const validateFormData = (formData: any, index: number): boolean => {
+  const validateFormData = (formData: FormData, index: number): boolean => {
     if (productType === "operational") {
-      if (!formData.productType) {
+      const data = formData as OperationalEquipmentFormData;
+      if (!data.productType) {
         alert(`Form #${index + 1}: Please select a product type`);
         return false;
       }
-      if (!formData.name?.trim()) {
+      if (!data.name?.trim()) {
         alert(`Form #${index + 1}: Please enter a product name`);
         return false;
       }
-      if (!formData.quantity || formData.quantity <= 0) {
+      if (!data.quantity || data.quantity <= 0) {
         alert(`Form #${index + 1}: Please enter a valid quantity`);
         return false;
       }
-      if (!formData.serialNumber?.trim()) {
+      if (!data.serialNumber?.trim()) {
         alert(`Form #${index + 1}: Please enter a serial number`);
         return false;
       }
-      if (!formData.condition) {
+      if (!data.condition) {
         alert(`Form #${index + 1}: Please select a condition`);
         return false;
       }
     } else if (productType === "for-sale") {
-      if (!formData.supplier) {
+      const data = formData as ForSaleProductFormData;
+      if (!data.supplier) {
         alert(`Form #${index + 1}: Please select a supplier`);
         return false;
       }
-      if (!formData.location?.trim()) {
+      if (!data.location?.trim()) {
         alert(`Form #${index + 1}: Please enter a location`);
         return false;
       }
-      if (!formData.condition) {
+      if (!data.condition) {
         alert(`Form #${index + 1}: Please select a condition`);
         return false;
       }
     } else if (productType === "package") {
-      if (!formData.packageName?.trim()) {
+      const data = formData as PackageBundleFormData;
+      if (!data.packageName?.trim()) {
         alert(`Form #${index + 1}: Package Name is required`);
         return false;
       }
-      if (!formData.ownershipType) {
+      if (!data.ownershipType) {
         alert(`Form #${index + 1}: Ownership Type is required`);
         return false;
       }
-      if (!formData.packageItems || formData.packageItems.length === 0) {
+      if (!data.packageItems || data.packageItems.length === 0) {
         alert(`Form #${index + 1}: Please add at least one item to the package`);
         return false;
       }
-      if (!formData.supplier) {
+      if (!data.supplier) {
         alert(`Form #${index + 1}: Supplier is required`);
         return false;
       }
-      if (!formData.location?.trim()) {
+      if (!data.location?.trim()) {
         alert(`Form #${index + 1}: Location is required`);
         return false;
       }
-      if (!formData.condition) {
+      if (!data.condition) {
         alert(`Form #${index + 1}: Condition is required`);
         return false;
       }
@@ -133,7 +193,7 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
 
   const handleSubmitAll = async () => {
     // Validate all forms
-    const formsToSubmit: any[] = [];
+    const formsToSubmit: FormData[] = [];
     for (let i = 0; i < formInstances.length; i++) {
       const id = formInstances[i];
       const formData = formDataMap.get(id);
@@ -177,7 +237,7 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
           }
 
           successCount++;
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error(`Error saving product ${i + 1}:`, error);
           errorCount++;
         }
@@ -197,9 +257,10 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
           onProductAdded?.();
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to save products. Please try again.";
       console.error("Error saving products:", error);
-      alert(error.message || "Failed to save products. Please try again.");
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -331,7 +392,7 @@ function OperationalEquipmentForm({
   loading,
 }: {
   formId: number;
-  onDataChange: (id: number, data: any) => void;
+  onDataChange: (id: number, data: FormData) => void;
   loading: boolean;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -351,7 +412,7 @@ function OperationalEquipmentForm({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -562,7 +623,7 @@ function ForSaleProductForm({
   loading,
 }: {
   formId: number;
-  onDataChange: (id: number, data: any) => void;
+  onDataChange: (id: number, data: FormData) => void;
   loading: boolean;
 }) {
   const [formData, setFormData] = useState({
@@ -603,13 +664,13 @@ function ForSaleProductForm({
     fetchSuppliers();
   }, []);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   // Update parent whenever form data changes
   useEffect(() => {
-    onDataChange(formId, formData);
+    onDataChange(formId, formData as ForSaleProductFormData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, formId]);
 
@@ -891,7 +952,7 @@ function PackageBundleForm({
   loading,
 }: {
   formId: number;
-  onDataChange: (id: number, data: any) => void;
+  onDataChange: (id: number, data: FormData) => void;
   loading: boolean;
 }) {
   const [formData, setFormData] = useState({
@@ -946,11 +1007,11 @@ function PackageBundleForm({
     fetchSuppliers();
   }, []);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleItemChange = (field: string, value: any) => {
+  const handleItemChange = (field: string, value: string | number) => {
     setCurrentItem((prev) => ({ ...prev, [field]: value }));
   };
 

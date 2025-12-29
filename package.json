@@ -27,6 +27,8 @@
     "gsap": "^3.14.1",
     "jsbarcode": "^3.12.1",
     "jsonwebtoken": "^9.0.3",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.556.0",
     "next": "16.0.8",
     "qrcode": "^1.5.4",

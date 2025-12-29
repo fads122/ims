@@ -6,7 +6,8 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import TopHeader from "@/components/top-header";
 import MetricsGrid from "@/components/metrics-grid";
-import InventoryTable from "@/components/inventory-table";
+import CostHistoryDashboard from "@/components/cost-history-dashboard";
+import RecentActivities from "@/components/recent-activities";
 
 interface User {
   id: string;
@@ -71,7 +72,10 @@ export default function Dashboard() {
 
               <MetricsGrid />
 
-              <InventoryTable />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CostHistoryDashboard />
+                <RecentActivities limit={15} />
+              </div>
             </div>
           </div>
         </SidebarInset>

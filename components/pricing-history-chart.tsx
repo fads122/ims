@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from "@/components/ui/chart";
 
 interface PricingHistoryItem {
   id: string;
@@ -17,6 +18,10 @@ interface PricingHistoryChartProps {
   productId: string;
   productType: string;
 }
+
+type ChartDataItem =
+  | { date: string; "Supplier Cost": number | null; "SRP": number | null; fullDate: string }
+  | { date: string; "Cost": number | null; "SRP": number | null; fullDate: string };
 
 export default function PricingHistoryChart({ productId, productType }: PricingHistoryChartProps) {
   const [history, setHistory] = useState<PricingHistoryItem[]>([]);
@@ -85,68 +90,118 @@ export default function PricingHistoryChart({ productId, productType }: PricingH
       };
     }
     return null;
-  }).filter(Boolean);
+  }).filter((item): item is ChartDataItem => item !== null) as ChartDataItem[];
 
-  const hasSupplierCost = productType === "for-sale" && chartData.some((d: any) => d["Supplier Cost"] !== null);
-  const hasCost = productType === "package" && chartData.some((d: any) => d["Cost"] !== null);
-  const hasSRP = chartData.some((d: any) => d["SRP"] !== null);
+  const hasSupplierCost = productType === "for-sale" && chartData.some((d) => "Supplier Cost" in d && d["Supplier Cost"] !== null);
+  const hasCost = productType === "package" && chartData.some((d) => "Cost" in d && d["Cost"] !== null);
+  const hasSRP = chartData.some((d) => d["SRP"] !== null);
+
+  // Calculate max value for Y-axis domain
+  const allValues = chartData.flatMap((d) => {
+    const values: (number | null)[] = [];
+    if ("Supplier Cost" in d) {
+      values.push(d["Supplier Cost"]);
+    }
+    if ("Cost" in d) {
+      values.push(d["Cost"]);
+    }
+    values.push(d["SRP"]);
+    return values.filter((v): v is number => v !== null && v !== undefined);
+  });
+  const maxValue = Math.max(...allValues, 0);
+
+  // Chart configuration for shadcn
+  const chartConfig: ChartConfig = {
+    ...(hasSupplierCost && {
+      "Supplier Cost": {
+        label: "Supplier Cost",
+        color: "#3b82f6", // Blue
+      },
+    }),
+    ...(hasCost && {
+      "Cost": {
+        label: "Cost",
+        color: "#10b981", // Green
+      },
+    }),
+    ...(hasSRP && {
+      "SRP": {
+        label: "SRP",
+        color: "#f59e0b", // Orange
+      },
+    }),
+  };
 
   return (
     <div className="w-full h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis 
-            dataKey="date" 
-            stroke="#6b7280"
-            style={{ fontSize: "12px" }}
+      <ChartContainer config={chartConfig} className="h-full">
+        <LineChart
+          data={chartData}
+          margin={{ top: 5, right: 20, left: 0, bottom: 20 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="date"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            angle={-45}
+            textAnchor="end"
+            height={60}
           />
-          <YAxis 
-            stroke="#6b7280"
-            style={{ fontSize: "12px" }}
-            tickFormatter={(value) => `$${value}`}
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value) => `$${value.toLocaleString()}`}
+            domain={[0, maxValue * 1.1 || 1000]}
           />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-            }}
-            formatter={(value: any) => value !== null ? `$${Number(value).toFixed(2)}` : "N/A"}
+          <ChartTooltip
+            cursor={false}
+            content={<ChartTooltipContent
+              formatter={(value) => {
+                if (value === null || value === undefined) return "N/A";
+                const numValue = Array.isArray(value) ? value[0] : value;
+                return `$${Number(numValue).toLocaleString()}`;
+              }}
+            />}
           />
-          <Legend />
+          <ChartLegend content={<ChartLegendContent />} />
           {hasSupplierCost && (
             <Line
               type="monotone"
               dataKey="Supplier Cost"
-              stroke="#3b82f6"
+              stroke="var(--color-Supplier Cost)"
               strokeWidth={2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
+              dot={{ r: 5, fill: "var(--color-Supplier Cost)" }}
+              activeDot={{ r: 7 }}
+              connectNulls={false}
             />
           )}
           {hasCost && (
             <Line
               type="monotone"
               dataKey="Cost"
-              stroke="#10b981"
+              stroke="var(--color-Cost)"
               strokeWidth={2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
+              dot={{ r: 5, fill: "var(--color-Cost)" }}
+              activeDot={{ r: 7 }}
+              connectNulls={false}
             />
           )}
           {hasSRP && (
             <Line
               type="monotone"
               dataKey="SRP"
-              stroke="#f59e0b"
+              stroke="var(--color-SRP)"
               strokeWidth={2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
+              dot={{ r: 5, fill: "var(--color-SRP)" }}
+              activeDot={{ r: 7 }}
+              connectNulls={false}
             />
           )}
         </LineChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 }

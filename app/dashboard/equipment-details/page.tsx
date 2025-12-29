@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useCallback, memo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, QrCode, Barcode, Package, DollarSign, MapPin, Calendar, Box, Tag, Building2, Hash, Edit, Save, X, TrendingUp } from "lucide-react";
+import { ArrowLeft, QrCode, Barcode, Package, DollarSign, MapPin, Calendar, Box, Tag, Building2, Hash, Edit, Save, X, FileText, Users, TrendingUp } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
 import QRBarcodeModal from "@/components/qr-barcode-modal";
-import PricingHistoryChart from "@/components/pricing-history-chart";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 
@@ -330,9 +329,34 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
               domain={[0, maxValue * 1.1 || 1000]}
             />
             <ChartTooltip
-              cursor={false}
+              cursor={true}
               content={<ChartTooltipContent 
-                formatter={(value: any) => value !== null ? `$${Number(value).toLocaleString()}` : "N/A"}
+                formatter={(value: any, name: string, item: any) => {
+                  const formattedValue = value !== null && value !== undefined 
+                    ? `$${Number(value).toLocaleString()}` 
+                    : "N/A";
+                  const label = chartConfig[name as keyof typeof chartConfig]?.label || name;
+                  const color = item.color || item.payload?.fill || (name === "Supplier Cost" ? "#3b82f6" : name === "SRP" ? "#f59e0b" : "#10b981");
+                  
+                  return (
+                    <div className="flex w-full items-center gap-2">
+                      <div
+                        className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                        style={{
+                          backgroundColor: color,
+                        }}
+                      />
+                      <div className="flex flex-1 justify-between items-center">
+                        <span className="text-muted-foreground">
+                          {label}
+                        </span>
+                        <span className="font-mono font-medium tabular-nums">
+                          {formattedValue}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }}
               />}
             />
             <ChartLegend content={<ChartLegendContent />} />
@@ -340,10 +364,10 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
               <Line
                 type="monotone"
                 dataKey="Supplier Cost"
-                stroke="var(--color-Supplier Cost)"
+                stroke="#3b82f6"
                 strokeWidth={2}
-                dot={{ r: 5, fill: "var(--color-Supplier Cost)" }}
-                activeDot={{ r: 7 }}
+                dot={{ r: 5, fill: "#3b82f6" }}
+                activeDot={{ r: 7, fill: "#3b82f6" }}
                 connectNulls={false}
               />
             )}
@@ -351,10 +375,10 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
               <Line
                 type="monotone"
                 dataKey="Cost"
-                stroke="var(--color-Cost)"
+                stroke="#10b981"
                 strokeWidth={2}
-                dot={{ r: 5, fill: "var(--color-Cost)" }}
-                activeDot={{ r: 7 }}
+                dot={{ r: 5, fill: "#10b981" }}
+                activeDot={{ r: 7, fill: "#10b981" }}
                 connectNulls={false}
               />
             )}
@@ -362,10 +386,10 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
               <Line
                 type="monotone"
                 dataKey="SRP"
-                stroke="var(--color-SRP)"
+                stroke="#f59e0b"
                 strokeWidth={2}
-                dot={{ r: 5, fill: "var(--color-SRP)" }}
-                activeDot={{ r: 7 }}
+                dot={{ r: 5, fill: "#f59e0b" }}
+                activeDot={{ r: 7, fill: "#f59e0b" }}
                 connectNulls={false}
               />
             )}
@@ -418,6 +442,29 @@ function EquipmentDetailsContent() {
   const [modalType, setModalType] = useState<"qr" | "barcode">("qr");
   const [modalData, setModalData] = useState<string>("");
   const [storedCode, setStoredCode] = useState<string>("");
+  const [usageData, setUsageData] = useState<{
+    used_in_projects: number;
+    borrowed: number;
+    proposal_usage: Array<{
+      id: string;
+      proposal_id: string;
+      quantity: number;
+      proposal_number: string;
+      proposal_title: string;
+      client_name: string;
+      proposal_status: string;
+    }>;
+    borrow_usage: Array<{
+      id: string;
+      borrow_request_id: string;
+      quantity: number;
+      borrower_name: string;
+      borrower_department: string;
+      borrow_date: string;
+      return_date: string;
+      borrow_status: string;
+    }>;
+  } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -442,8 +489,22 @@ function EquipmentDetailsContent() {
   useEffect(() => {
     if (user && id) {
       fetchEquipment();
+      fetchUsageData();
     }
   }, [user, id, type]);
+
+  const fetchUsageData = async () => {
+    if (!id) return;
+    try {
+      const response = await fetch(`/api/equipment/usage?equipment_id=${id}&equipment_type=${type}`);
+      if (response.ok) {
+        const result = await response.json();
+        setUsageData(result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching usage data:", error);
+    }
+  };
 
   const fetchEquipment = async () => {
     try {
@@ -753,24 +814,6 @@ function EquipmentDetailsContent() {
                   </InfoCard>
                 )}
 
-                {/* Pricing History Chart (for-sale and package only) */}
-                {(type === "for-sale" || type === "package") && id && (
-                  <div className="lg:col-span-2">
-                    <InfoCard 
-                      title="Pricing History" 
-                      icon={TrendingUp} 
-                      section="pricing-history"
-                      isEditing={false}
-                      isSaving={false}
-                      onEdit={() => {}}
-                      onCancel={() => {}}
-                      onSave={() => {}}
-                    >
-                      <PricingHistoryChart productId={id} productType={type} />
-                    </InfoCard>
-                  </div>
-                )}
-
                 {/* Supplier Information Card (for-sale and package only) */}
                 {(type === "for-sale" || type === "package") && (
                   <InfoCard 
@@ -815,6 +858,222 @@ function EquipmentDetailsContent() {
                         <Barcode className="w-5 h-5" />
                         View Barcode
                       </button>
+                    </div>
+                  </InfoCard>
+                )}
+
+                {/* Quantity Usage Card */}
+                {usageData && (usageData.used_in_projects > 0 || usageData.borrowed > 0) && (
+                  <InfoCard 
+                    title="Quantity Usage" 
+                    icon={TrendingUp} 
+                    section="usage"
+                    isEditing={false}
+                    isSaving={false}
+                    onEdit={() => {}}
+                    onCancel={() => {}}
+                    onSave={() => {}}
+                  >
+                    <div className="space-y-4">
+                      {/* Summary */}
+                      <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {editData.quantity - usageData.used_in_projects - usageData.borrowed}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Available</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {usageData.used_in_projects}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">In Projects</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                            {usageData.borrowed}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Borrowed</div>
+                        </div>
+                      </div>
+
+                      {/* Used in Projects */}
+                      {usageData.proposal_usage.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <h4 className="font-medium text-gray-900 dark:text-white">Used in Projects</h4>
+                          </div>
+                          <div className="space-y-2">
+                            {usageData.proposal_usage.map((usage) => (
+                              <div
+                                key={usage.id}
+                                className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm text-gray-900 dark:text-white">
+                                      {usage.proposal_title}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {usage.proposal_number} • {usage.client_name}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-semibold text-blue-600 dark:text-blue-400">
+                                      {usage.quantity}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">qty</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Borrowed */}
+                      {usageData.borrow_usage.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Users className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                            <h4 className="font-medium text-gray-900 dark:text-white">Borrowed</h4>
+                          </div>
+                          <div className="space-y-2">
+                            {usageData.borrow_usage.map((usage) => (
+                              <div
+                                key={usage.id}
+                                className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm text-gray-900 dark:text-white">
+                                      {usage.borrower_name}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {usage.borrower_department} • Return: {usage.return_date ? new Date(usage.return_date).toLocaleDateString() : "N/A"}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-semibold text-orange-600 dark:text-orange-400">
+                                      {usage.quantity}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">qty</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </InfoCard>
+                )}
+
+                {/* Quantity Usage Card */}
+                {usageData && (usageData.used_in_projects > 0 || usageData.borrowed > 0) && (
+                  <InfoCard 
+                    title="Quantity Usage" 
+                    icon={TrendingUp} 
+                    section="usage"
+                    isEditing={false}
+                    isSaving={false}
+                    onEdit={() => {}}
+                    onCancel={() => {}}
+                    onSave={() => {}}
+                  >
+                    <div className="space-y-4">
+                      {/* Summary */}
+                      <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {editData.quantity - usageData.used_in_projects - usageData.borrowed}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Available</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {usageData.used_in_projects}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">In Projects</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                            {usageData.borrowed}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Borrowed</div>
+                        </div>
+                      </div>
+
+                      {/* Used in Projects */}
+                      {usageData.proposal_usage.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <h4 className="font-medium text-gray-900 dark:text-white">Used in Projects</h4>
+                          </div>
+                          <div className="space-y-2">
+                            {usageData.proposal_usage.map((usage) => (
+                              <div
+                                key={usage.id}
+                                className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm text-gray-900 dark:text-white">
+                                      {usage.proposal_title}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {usage.proposal_number} • {usage.client_name}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-semibold text-blue-600 dark:text-blue-400">
+                                      {usage.quantity}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">qty</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Borrowed */}
+                      {usageData.borrow_usage.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Users className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                            <h4 className="font-medium text-gray-900 dark:text-white">Borrowed</h4>
+                          </div>
+                          <div className="space-y-2">
+                            {usageData.borrow_usage.map((usage) => (
+                              <div
+                                key={usage.id}
+                                className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm text-gray-900 dark:text-white">
+                                      {usage.borrower_name}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {usage.borrower_department} • Return: {usage.return_date ? new Date(usage.return_date).toLocaleDateString() : "N/A"}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-semibold text-orange-600 dark:text-orange-400">
+                                      {usage.quantity}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">qty</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </InfoCard>
                 )}

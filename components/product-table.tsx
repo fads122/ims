@@ -23,6 +23,7 @@ interface GroupedProduct {
   lastUpdated: string;
   status: string;
   items: any[];
+  suppliers?: string[];
 }
 
 export default function ProductTable({ searchQuery, refreshTrigger = 0 }: ProductTableProps) {
@@ -88,6 +89,9 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
         return itemDate > latestDate ? item.updated_at || item.created_at : latest;
       }, items[0]?.updated_at || items[0]?.created_at || "");
 
+      // Get unique suppliers for this group
+      const uniqueSuppliers = Array.from(new Set(items.map((item: any) => item.supplier).filter(Boolean)));
+
       grouped.push({
         groupName: model,
         totalQuantity,
@@ -95,6 +99,7 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
         lastUpdated,
         status: totalQuantity > 5 ? "Available" : totalQuantity > 0 ? "Low Stock" : "Out of Stock",
         items,
+        suppliers: uniqueSuppliers,
       });
     });
 
@@ -317,6 +322,9 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Total Quantity</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Variants</th>
+                {activeTab === "for-sale" && (
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Suppliers</th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Last Updated</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Actions</th>
@@ -325,7 +333,7 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {displayGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={activeTab === "for-sale" ? 8 : 7} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                     {allGroups.length === 0 
                       ? `No ${activeTab === "for-sale" ? "for sale" : "operational"} products found. Add your first product!` 
                       : "No products match your search"}
@@ -372,6 +380,24 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{group.variantCount}</td>
+                        {activeTab === "for-sale" && (
+                          <td className="px-6 py-4">
+                            {group.suppliers && group.suppliers.length > 0 ? (
+                              group.suppliers.length === 1 ? (
+                                <span className="text-gray-900 dark:text-white font-medium">{group.suppliers[0]}</span>
+                              ) : (
+                                <div className="flex items-center gap-1">
+                                  <Building2 className="w-4 h-4 text-gray-400" />
+                                  <span className="text-gray-900 dark:text-white font-medium">
+                                    {group.suppliers.length} Suppliers
+                                  </span>
+                                </div>
+                              )
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                        )}
                         <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{formatDate(group.lastUpdated)}</td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusBadge(group.status)}`}>
@@ -447,6 +473,18 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                             <span className="font-medium text-gray-900 dark:text-white">{item.quantity || 0}</span>
                           </td>
                           <td className="px-6 py-3 text-gray-600 dark:text-gray-400">-</td>
+                          {activeTab === "for-sale" && (
+                            <td className="px-6 py-3">
+                              {item.supplier ? (
+                                <div className="flex items-center gap-1.5">
+                                  <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                                  <span className="text-gray-900 dark:text-white font-medium">{item.supplier}</span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                          )}
                           <td className="px-6 py-3 text-gray-600 dark:text-gray-400">
                             {formatDate(item.updated_at || item.created_at)}
                           </td>

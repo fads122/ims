@@ -1,22 +1,64 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Truck, Package, Archive, Wrench, Trophy } from "lucide-react";
 import Link from "next/link";
 
+interface DashboardStats {
+  total_suppliers: number;
+  total_products: number;
+  borrowed: number;
+  used_in_projects: number;
+  top_supplier: string;
+}
+
 export default function MetricsGrid() {
+  const [stats, setStats] = useState<DashboardStats>({
+    total_suppliers: 0,
+    total_products: 0,
+    borrowed: 0,
+    used_in_projects: 0,
+    top_supplier: "N/A",
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch("/api/dashboard/stats");
+      if (response.ok) {
+        const result = await response.json();
+        setStats(result.data || {
+          total_suppliers: 0,
+          total_products: 0,
+          borrowed: 0,
+          used_in_projects: 0,
+          top_supplier: "N/A",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const metrics = [
     {
       title: "Total Suppliers",
-      value: "9",
+      value: loading ? "..." : stats.total_suppliers.toString(),
       icon: Truck,
       iconColor: "text-blue-600 dark:text-blue-400",
       iconBg: "bg-blue-50 dark:bg-blue-900/20",
       linkText: "View All",
-      href: "/dashboard/suppliers",
+      href: "/dashboard/supplier-list",
     },
     {
       title: "Total Products",
-      value: "48",
+      value: loading ? "..." : stats.total_products.toString(),
       icon: Package,
       iconColor: "text-green-600 dark:text-green-400",
       iconBg: "bg-green-50 dark:bg-green-900/20",
@@ -25,30 +67,30 @@ export default function MetricsGrid() {
     },
     {
       title: "Borrowed",
-      value: "0",
+      value: loading ? "..." : stats.borrowed.toString(),
       icon: Archive,
       iconColor: "text-orange-600 dark:text-orange-400",
       iconBg: "bg-orange-50 dark:bg-orange-900/20",
       linkText: "View All",
-      href: "/dashboard/borrowed",
+      href: "/dashboard/item",
     },
     {
       title: "Used in Projects",
-      value: "25",
+      value: loading ? "..." : stats.used_in_projects.toString(),
       icon: Wrench,
       iconColor: "text-purple-600 dark:text-purple-400",
       iconBg: "bg-purple-50 dark:bg-purple-900/20",
       linkText: "View All",
-      href: "/dashboard/projects",
+      href: "/dashboard/project-proposals",
     },
     {
       title: "Top Ranked Supplier",
-      value: "Supplier3",
+      value: loading ? "..." : stats.top_supplier,
       icon: Trophy,
       iconColor: "text-yellow-600 dark:text-yellow-400",
       iconBg: "bg-yellow-50 dark:bg-yellow-900/20",
       linkText: "View Ranking",
-      href: "/dashboard/suppliers/ranking",
+      href: "/dashboard/supplier-list",
     },
   ];
 

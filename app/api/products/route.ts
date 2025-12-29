@@ -95,6 +95,14 @@ export async function POST(request: NextRequest) {
       }).select().single();
 
       if (error) throw error;
+
+      // Record initial pricing history for for-sale products
+      await supabase.from("pricing_history").insert({
+        product_id: insertedData.id,
+        product_type: "for-sale",
+        supplier_cost: data.supplierCost || 0,
+        srp: data.srp || 0,
+      });
       
       return NextResponse.json({ success: true, data: insertedData }, { status: 201 });
     } else if (type === "package") {
@@ -333,16 +341,35 @@ export async function PUT(request: NextRequest) {
 
       if (error) throw error;
 
-      // Record pricing history if prices changed
+      // Record pricing history if prices changed - get last history entry to preserve unchanged values
       if (currentProduct && (
-        currentProduct.supplier_cost !== data.supplierCost ||
-        currentProduct.srp !== data.srp
+        Number(currentProduct.supplier_cost) !== Number(data.supplierCost) ||
+        Number(currentProduct.srp) !== Number(data.srp)
       )) {
+        // Get the last pricing history entry to preserve unchanged values
+        const { data: lastHistory } = await supabase
+          .from("pricing_history")
+          .select("supplier_cost, srp")
+          .eq("product_id", id)
+          .eq("product_type", "for-sale")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        // Use new values for changed fields, keep previous values for unchanged fields
+        const newSupplierCost = Number(currentProduct.supplier_cost) !== Number(data.supplierCost) 
+          ? data.supplierCost 
+          : (lastHistory?.supplier_cost ?? currentProduct.supplier_cost);
+        
+        const newSrp = Number(currentProduct.srp) !== Number(data.srp)
+          ? data.srp
+          : (lastHistory?.srp ?? currentProduct.srp);
+
         await supabase.from("pricing_history").insert({
           product_id: id,
           product_type: "for-sale",
-          supplier_cost: data.supplierCost,
-          srp: data.srp,
+          supplier_cost: newSupplierCost,
+          srp: newSrp,
         });
       }
 
@@ -400,16 +427,35 @@ export async function PUT(request: NextRequest) {
 
       if (error) throw error;
 
-      // Record pricing history if prices changed
+      // Record pricing history if prices changed - get last history entry to preserve unchanged values
       if (currentProduct && (
-        currentProduct.cost !== data.cost ||
-        currentProduct.srp !== data.srp
+        Number(currentProduct.cost) !== Number(data.cost) ||
+        Number(currentProduct.srp) !== Number(data.srp)
       )) {
+        // Get the last pricing history entry to preserve unchanged values
+        const { data: lastHistory } = await supabase
+          .from("pricing_history")
+          .select("cost, srp")
+          .eq("product_id", id)
+          .eq("product_type", "package")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        // Use new values for changed fields, keep previous values for unchanged fields
+        const newCost = Number(currentProduct.cost) !== Number(data.cost)
+          ? data.cost
+          : (lastHistory?.cost ?? currentProduct.cost);
+        
+        const newSrp = Number(currentProduct.srp) !== Number(data.srp)
+          ? data.srp
+          : (lastHistory?.srp ?? currentProduct.srp);
+
         await supabase.from("pricing_history").insert({
           product_id: id,
           product_type: "package",
-          cost: data.cost,
-          srp: data.srp,
+          cost: newCost,
+          srp: newSrp,
         });
       }
 
