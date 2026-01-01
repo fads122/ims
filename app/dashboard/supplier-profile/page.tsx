@@ -2,14 +2,18 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Edit, Save, X, Plus, Building2, Phone, Mail, MapPin, Star, Facebook, MessageCircle, Send, Instagram, Search } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, User, Star, Facebook, MessageCircle, Instagram, Send, Edit, CheckCircle, XCircle, Save, X } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
-import AddProductModal from "@/components/add-product-modal";
+import Breadcrumbs from "@/components/breadcrumbs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface User {
   id: string;
@@ -30,36 +34,32 @@ interface Supplier {
   telegram?: string;
   instagram?: string;
   rating?: number;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  brand?: string;
-  model?: string;
-  category?: string;
-  cost?: number;
-  quantity: number;
-  images?: string[];
-  type: "operational" | "for-sale" | "package";
+  created_at?: string;
+  updated_at?: string;
 }
 
 function SupplierProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supplierId = searchParams.get("id");
-
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [supplier, setSupplier] = useState<Supplier | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"individual" | "package">("individual");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
-  const [editData, setEditData] = useState<Partial<Supplier>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    supplierName: "",
+    contactPerson: "",
+    phone: "",
+    email: "",
+    status: "Active" as "Active" | "Inactive",
+    address: "",
+    facebookPage: "",
+    viber: "",
+    telegram: "",
+    instagram: "",
+    rating: 0,
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -73,8 +73,6 @@ function SupplierProfileContent() {
       } catch (error) {
         console.error("Auth check error:", error);
         router.push("/login");
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -82,130 +80,166 @@ function SupplierProfileContent() {
   }, [router]);
 
   useEffect(() => {
-    if (user && supplierId) {
+    if (user) {
       fetchSupplier();
-      fetchProducts();
     }
-  }, [user, supplierId]);
+  }, [user, searchParams]);
 
   const fetchSupplier = async () => {
+    const id = searchParams.get("id");
+    if (!id) {
+      setError("Supplier ID is required");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/suppliers?id=${supplierId}`);
-      if (!response.ok) throw new Error("Failed to fetch supplier");
+      const response = await fetch(`/api/suppliers?id=${id}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to fetch supplier");
+      }
 
       const result = await response.json();
-      const supplierData = result.data?.[0] || result.data;
+      const supplierData = result.data;
       setSupplier(supplierData);
-      setEditData(supplierData);
-    } catch (error) {
+      // Initialize form data
+      setFormData({
+        supplierName: supplierData.supplier_name || "",
+        contactPerson: supplierData.contact_person || "",
+        phone: supplierData.phone || "",
+        email: supplierData.email || "",
+        status: supplierData.status || "Active",
+        address: supplierData.address || "",
+        facebookPage: supplierData.facebook_page || "",
+        viber: supplierData.viber || "",
+        telegram: supplierData.telegram || "",
+        instagram: supplierData.instagram || "",
+        rating: supplierData.rating || 0,
+      });
+    } catch (error: any) {
       console.error("Error fetching supplier:", error);
+      setError(error.message || "Failed to load supplier details");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch("/api/products");
-      if (!response.ok) throw new Error("Failed to fetch products");
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
 
-      const result = await response.json();
-      const allProducts: Product[] = [];
-
-      // Get products from all types and filter by supplier
-      if (result.data.operational) {
-        result.data.operational.forEach((item: any) => {
-          allProducts.push({
-            id: item.id,
-            name: item.name,
-            brand: item.brand,
-            model: item.model,
-            category: item.product_type,
-            quantity: item.quantity || 0,
-            images: item.images || [],
-            type: "operational",
-          });
-        });
-      }
-
-      if (result.data.forSale) {
-        result.data.forSale.forEach((item: any) => {
-          if (item.supplier === supplier?.supplier_name) {
-            allProducts.push({
-              id: item.id,
-              name: item.product_brand || item.product_model,
-              brand: item.product_brand,
-              model: item.product_model,
-              category: item.category,
-              cost: parseFloat(item.supplier_cost) || 0,
-              quantity: item.quantity || 0,
-              images: item.images || [],
-              type: "for-sale",
-            });
-          }
-        });
-      }
-
-      if (result.data.packages) {
-        result.data.packages.forEach((item: any) => {
-          if (item.supplier === supplier?.supplier_name) {
-            allProducts.push({
-              id: item.id,
-              name: item.package_name,
-              category: item.package_category,
-              quantity: item.quantity || 0,
-              cost: parseFloat(item.cost) || 0,
-              images: item.images || [],
-              type: "package",
-            });
-          }
-        });
-      }
-
-      setProducts(allProducts);
-
-      // Extract unique brands
-      const uniqueBrands = Array.from(
-        new Set(allProducts.map((p) => p.brand).filter((b) => b))
-      ) as string[];
-      setBrands(uniqueBrands);
-    } catch (error) {
-      console.error("Error fetching products:", error);
+  const handleCancel = () => {
+    if (supplier) {
+      setFormData({
+        supplierName: supplier.supplier_name || "",
+        contactPerson: supplier.contact_person || "",
+        phone: supplier.phone || "",
+        email: supplier.email || "",
+        status: supplier.status || "Active",
+        address: supplier.address || "",
+        facebookPage: supplier.facebook_page || "",
+        viber: supplier.viber || "",
+        telegram: supplier.telegram || "",
+        instagram: supplier.instagram || "",
+        rating: supplier.rating || 0,
+      });
     }
+    setIsEditing(false);
+  };
+
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validateForm = () => {
+    if (!formData.supplierName.trim()) {
+      alert("Supplier name is required");
+      return false;
+    }
+    if (!formData.contactPerson.trim()) {
+      alert("Contact person is required");
+      return false;
+    }
+    if (!formData.phone.trim()) {
+      alert("Phone number is required");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      alert("Email is required");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Invalid email format");
+      return false;
+    }
+    if (!formData.address.trim()) {
+      alert("Address is required");
+      return false;
+    }
+    return true;
   };
 
   const handleSave = async () => {
+    if (!validateForm() || !supplier) return;
+
+    setSaving(true);
     try {
       const response = await fetch("/api/suppliers", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: supplierId, ...editData }),
+        body: JSON.stringify({
+          id: supplier.id,
+          supplierName: formData.supplierName,
+          contactPerson: formData.contactPerson,
+          phone: formData.phone,
+          email: formData.email,
+          status: formData.status,
+          address: formData.address,
+          facebookPage: formData.facebookPage,
+          viber: formData.viber,
+          telegram: formData.telegram,
+          instagram: formData.instagram,
+          rating: formData.rating || null,
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to update supplier");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update supplier");
+      }
 
-      await fetchSupplier();
-      setIsEditMode(false);
+      const result = await response.json();
+      setSupplier(result.data);
+      setIsEditing(false);
       alert("Supplier updated successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating supplier:", error);
-      alert("Failed to update supplier");
+      alert(error.message || "Failed to update supplier");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleCancel = () => {
-    setEditData(supplier || {});
-    setIsEditMode(false);
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.model?.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesTab = activeTab === "individual" ? product.type !== "package" : product.type === "package";
-    const matchesBrand = !selectedBrand || product.brand === selectedBrand;
-
-    return matchesSearch && matchesTab && matchesBrand;
-  });
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   if (loading) {
     return (
@@ -215,12 +249,45 @@ function SupplierProfileContent() {
     );
   }
 
-  if (!user || !supplier) {
+  if (!user) {
     return null;
   }
 
-  const individualProducts = filteredProducts.filter((p) => p.type !== "package");
-  const packageProducts = filteredProducts.filter((p) => p.type === "package");
+  if (error || !supplier) {
+    return (
+      <SidebarProvider>
+        <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+          <AppSidebar />
+          <SidebarInset className="flex flex-col bg-transparent">
+            <TopHeader userEmail={user.email} />
+            <div className="flex-1 overflow-auto">
+              <div className="p-6 lg:p-8">
+                <Button
+                  onClick={() => router.push("/dashboard/supplier-list")}
+                  variant="outline"
+                  className="mb-4"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Supplier List
+                </Button>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-8 text-center">
+                    <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      Supplier Not Found
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {error || "The supplier you're looking for doesn't exist or has been removed."}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -230,447 +297,506 @@ function SupplierProfileContent() {
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
             <div className="p-6 lg:p-8 space-y-6">
-              {/* Header Actions */}
-              <div className="flex items-center justify-between">
-                <button
+              {/* Breadcrumbs */}
+              <Breadcrumbs />
+              {/* Header with Back Button */}
+              <div className="flex items-center gap-4">
+                <Button
                   onClick={() => router.push("/dashboard/supplier-list")}
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  ← Back to Supplier List
-                </button>
-                <div className="flex gap-2">
-                  {isEditMode ? (
-                    <>
-                      <Button variant="outline" onClick={handleCancel}>
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </Button>
-                      <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-                        <Save className="w-4 h-4 mr-2" />
-                        Save
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" onClick={() => setIsEditMode(true)}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
-                      </Button>
-                      <Button onClick={() => setIsProductModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Product
-                      </Button>
-                    </>
-                  )}
-                </div>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Button>
               </div>
 
-              {/* Supplier Profile Card */}
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                <div className="flex items-start gap-6">
-                  <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      {isEditMode ? (
+              {/* Supplier Header */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white text-xl font-bold">
+                      {getInitials(isEditing ? formData.supplierName : supplier.supplier_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {isEditing ? (
                         <Input
-                          value={editData.supplier_name || ""}
-                          onChange={(e) => setEditData({ ...editData, supplier_name: e.target.value })}
-                          className="text-2xl font-bold mb-2"
+                          value={formData.supplierName}
+                          onChange={(e) => handleChange("supplierName", e.target.value)}
+                          className="text-2xl font-bold h-12 flex-1 min-w-[200px]"
+                          placeholder="Supplier Name"
                         />
                       ) : (
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{supplier.supplier_name}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white truncate">
+                          {supplier.supplier_name}
+                        </h1>
                       )}
-                      <div className="flex items-center gap-2 mt-2">
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                        {isEditMode ? (
-                          <Input
-                            value={editData.address || ""}
-                            onChange={(e) => setEditData({ ...editData, address: e.target.value })}
-                            className="flex-1"
-                          />
-                        ) : (
-                          <span className="text-gray-600 dark:text-gray-400">{supplier.address}</span>
-                        )}
-                      </div>
-                      {isEditMode ? (
-                        <div className="flex items-center gap-2 mt-2">
-                          <Label>Rating:</Label>
+                      {!isEditing ? (
+                        <Button
+                          onClick={handleEdit}
+                          variant="outline"
+                          size="sm"
+                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Supplier
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={handleSave}
+                            disabled={saving}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            {saving ? "Saving..." : "Save"}
+                          </Button>
+                          <Button
+                            onClick={handleCancel}
+                            disabled={saving}
+                            variant="outline"
+                            size="sm"
+                            className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            Cancel
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-2 flex-wrap">
+                      {isEditing ? (
+                        <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className={`${
+                            supplier.status === "Active"
+                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-600"
+                          }`}
+                        >
+                          {supplier.status === "Active" ? (
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                          ) : (
+                            <XCircle className="w-3 h-3 mr-1" />
+                          )}
+                          {supplier.status}
+                        </Badge>
+                      )}
+                      {isEditing ? (
+                        <div className="flex items-center gap-2">
                           <Input
                             type="number"
-                            step="0.1"
+                            value={formData.rating}
+                            onChange={(e) => handleChange("rating", parseFloat(e.target.value) || 0)}
+                            className="w-20 h-8"
+                            placeholder="0.0"
                             min="0"
                             max="5"
-                            value={editData.rating || 0}
-                            onChange={(e) => setEditData({ ...editData, rating: parseFloat(e.target.value) })}
-                            className="w-20"
+                            step="0.1"
                           />
+                          <Star className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 mt-2">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {supplier.rating?.toFixed(1) || "0.0"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Contact Information */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-gray-500" />
-                        {isEditMode ? (
-                          <Input
-                            value={editData.phone || ""}
-                            onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                            className="flex-1"
-                          />
-                        ) : (
-                          <span className="text-gray-600 dark:text-gray-400">{supplier.phone}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-gray-500" />
-                        {isEditMode ? (
-                          <Input
-                            type="email"
-                            value={editData.email || ""}
-                            onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                            className="flex-1"
-                          />
-                        ) : (
-                          <span className="text-gray-600 dark:text-gray-400">{supplier.email}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600 dark:text-gray-400">Contact Person:</span>
-                        {isEditMode ? (
-                          <Input
-                            value={editData.contact_person || ""}
-                            onChange={(e) => setEditData({ ...editData, contact_person: e.target.value })}
-                            className="flex-1"
-                          />
-                        ) : (
-                          <span className="text-gray-600 dark:text-gray-400">{supplier.contact_person}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Social Media */}
-                    <div className="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      {supplier.facebook_page && (
-                        <a
-                          href={supplier.facebook_page}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
-                        >
-                          <Facebook className="w-5 h-5" />
-                          {isEditMode ? (
-                            <Input
-                              value={editData.facebook_page || ""}
-                              onChange={(e) => setEditData({ ...editData, facebook_page: e.target.value })}
-                              placeholder="Facebook URL"
-                              className="w-48"
-                            />
-                          ) : (
-                            <span>Facebook</span>
-                          )}
-                        </a>
-                      )}
-                      {supplier.viber && (
-                        <a
-                          href={`viber://contact?number=${supplier.viber}`}
-                          className="flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:underline"
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                          {isEditMode ? (
-                            <Input
-                              value={editData.viber || ""}
-                              onChange={(e) => setEditData({ ...editData, viber: e.target.value })}
-                              placeholder="Viber"
-                              className="w-48"
-                            />
-                          ) : (
-                            <span>Viber</span>
-                          )}
-                        </a>
-                      )}
-                      {supplier.telegram && (
-                        <a
-                          href={`https://t.me/${supplier.telegram}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-500 dark:text-blue-400 hover:underline"
-                        >
-                          <Send className="w-5 h-5" />
-                          {isEditMode ? (
-                            <Input
-                              value={editData.telegram || ""}
-                              onChange={(e) => setEditData({ ...editData, telegram: e.target.value })}
-                              placeholder="Telegram"
-                              className="w-48"
-                            />
-                          ) : (
-                            <span>Telegram</span>
-                          )}
-                        </a>
-                      )}
-                      {supplier.instagram && (
-                        <a
-                          href={`https://instagram.com/${supplier.instagram}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-pink-600 dark:text-pink-400 hover:underline"
-                        >
-                          <Instagram className="w-5 h-5" />
-                          {isEditMode ? (
-                            <Input
-                              value={editData.instagram || ""}
-                              onChange={(e) => setEditData({ ...editData, instagram: e.target.value })}
-                              placeholder="Instagram"
-                              className="w-48"
-                            />
-                          ) : (
-                            <span>Instagram</span>
-                          )}
-                        </a>
+                        supplier.rating && (
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <Star className="w-4 h-4 text-yellow-500 dark:text-yellow-400 fill-yellow-500 dark:fill-yellow-400" />
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">
+                              {supplier.rating.toFixed(1)}
+                            </span>
+                          </div>
+                        )
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Statistics */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Products</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{products.length}</div>
-                </div>
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Brands</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{brands.length}</div>
-                </div>
-              </div>
-
-              {/* Brands Offered */}
-              {brands.length > 0 && (
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Brands Offered</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {brands.map((brand) => (
-                      <button
-                        key={brand}
-                        onClick={() => setSelectedBrand(selectedBrand === brand ? null : brand)}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                          selectedBrand === brand
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        }`}
-                      >
-                        {brand}
-                        <span className="ml-2 text-xs">
-                          ({products.filter((p) => p.brand === brand).length})
-                        </span>
-                      </button>
-                    ))}
-                    {selectedBrand && (
-                      <button
-                        onClick={() => setSelectedBrand(null)}
-                        className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                      >
-                        Clear Filter
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Search */}
-              <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Tabs */}
-              <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => setActiveTab("individual")}
-                  className={`px-4 py-2 font-medium transition-colors ${
-                    activeTab === "individual"
-                      ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  }`}
-                >
-                  Individual Equipment ({individualProducts.length})
-                </button>
-                <button
-                  onClick={() => setActiveTab("package")}
-                  className={`px-4 py-2 font-medium transition-colors ${
-                    activeTab === "package"
-                      ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  }`}
-                >
-                  Package Equipment ({packageProducts.length})
-                </button>
-              </div>
-
-              {/* Products Table */}
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                        {activeTab === "individual" ? (
-                          <>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Brand</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Model</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Category</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Cost</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Stock</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Images</th>
-                          </>
-                        ) : (
-                          <>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Package Name</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Category</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Items</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Cost</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Stock</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-400">Images</th>
-                          </>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(activeTab === "individual" ? individualProducts : packageProducts).length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                            No products found
-                          </td>
-                        </tr>
-                      ) : (
-                        (activeTab === "individual" ? individualProducts : packageProducts).map((product) => (
-                          <tr
-                            key={product.id}
-                            className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                          >
-                            {activeTab === "individual" ? (
-                              <>
-                                <td className="px-4 py-4 text-gray-600 dark:text-gray-400">{product.brand || "N/A"}</td>
-                                <td className="px-4 py-4 text-gray-600 dark:text-gray-400">{product.model || "N/A"}</td>
-                                <td className="px-4 py-4 text-gray-600 dark:text-gray-400">{product.category || "N/A"}</td>
-                                <td className="px-4 py-4 text-gray-600 dark:text-gray-400">
-                                  {product.cost ? `$${product.cost.toFixed(2)}` : "N/A"}
-                                </td>
-                                <td className="px-4 py-4">
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      product.quantity < 5
-                                        ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                                        : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                                    }`}
-                                  >
-                                    {product.quantity}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-4">
-                                  {product.images && product.images.length > 0 ? (
-                                    <div className="flex gap-2">
-                                      {product.images.slice(0, 2).map((img, idx) => (
-                                        <img
-                                          key={idx}
-                                          src={img}
-                                          alt={`Product ${idx + 1}`}
-                                          className="w-10 h-10 object-cover rounded border border-gray-200 dark:border-gray-700 cursor-pointer"
-                                          onClick={() => window.open(img, "_blank")}
-                                        />
-                                      ))}
-                                      {product.images.length > 2 && (
-                                        <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400">
-                                          +{product.images.length - 2}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <span className="text-gray-400">No images</span>
-                                  )}
-                                </td>
-                              </>
+              {/* Main Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column - Main Info */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Contact Information */}
+                  <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                        <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        Contact Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                            <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              Contact Person
+                            </p>
+                            {isEditing ? (
+                              <Input
+                                value={formData.contactPerson}
+                                onChange={(e) => handleChange("contactPerson", e.target.value)}
+                                className="text-sm"
+                                placeholder="Contact Person"
+                              />
                             ) : (
-                              <>
-                                <td className="px-4 py-4 font-medium text-gray-900 dark:text-white">{product.name}</td>
-                                <td className="px-4 py-4 text-gray-600 dark:text-gray-400">{product.category || "N/A"}</td>
-                                <td className="px-4 py-4 text-gray-600 dark:text-gray-400">Package contents</td>
-                                <td className="px-4 py-4 text-gray-600 dark:text-gray-400">
-                                  {product.cost ? `$${product.cost.toFixed(2)}` : "N/A"}
-                                </td>
-                                <td className="px-4 py-4">
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      product.quantity === 0
-                                        ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                                        : product.quantity < 5
-                                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
-                                        : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                                    }`}
-                                  >
-                                    {product.quantity === 0 ? "No Stock" : product.quantity < 5 ? "Low Stock" : "High Stock"}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-4">
-                                  {product.images && product.images.length > 0 ? (
-                                    <div className="flex gap-2">
-                                      {product.images.slice(0, 2).map((img, idx) => (
-                                        <img
-                                          key={idx}
-                                          src={img}
-                                          alt={`Product ${idx + 1}`}
-                                          className="w-10 h-10 object-cover rounded border border-gray-200 dark:border-gray-700 cursor-pointer"
-                                          onClick={() => window.open(img, "_blank")}
-                                        />
-                                      ))}
-                                      {product.images.length > 2 && (
-                                        <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400">
-                                          +{product.images.length - 2}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <span className="text-gray-400">No images</span>
-                                  )}
-                                </td>
-                              </>
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                {supplier.contact_person}
+                              </p>
                             )}
-                          </tr>
-                        ))
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                          <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            <Phone className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              Phone
+                            </p>
+                            {isEditing ? (
+                              <Input
+                                value={formData.phone}
+                                onChange={(e) => handleChange("phone", e.target.value)}
+                                className="text-sm"
+                                placeholder="Phone Number"
+                              />
+                            ) : (
+                              <a
+                                href={`tel:${supplier.phone}`}
+                                className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                              >
+                                {supplier.phone}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                            <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              Email
+                            </p>
+                            {isEditing ? (
+                              <Input
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => handleChange("email", e.target.value)}
+                                className="text-sm"
+                                placeholder="Email Address"
+                              />
+                            ) : (
+                              <a
+                                href={`mailto:${supplier.email}`}
+                                className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors break-all"
+                              >
+                                {supplier.email}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                          <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                            <MapPin className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              Address
+                            </p>
+                            {isEditing ? (
+                              <Input
+                                value={formData.address}
+                                onChange={(e) => handleChange("address", e.target.value)}
+                                className="text-sm"
+                                placeholder="Address"
+                              />
+                            ) : (
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                {supplier.address || "N/A"}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Social Media & Communication */}
+                  {(isEditing || supplier.facebook_page || supplier.viber || supplier.telegram || supplier.instagram) && (
+                    <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                          <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          Social Media & Communication
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {(isEditing || supplier.facebook_page) && (
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <Facebook className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                  Facebook Page
+                                </p>
+                                {isEditing ? (
+                                  <Input
+                                    value={formData.facebookPage}
+                                    onChange={(e) => handleChange("facebookPage", e.target.value)}
+                                    className="text-sm"
+                                    placeholder="Facebook Page URL"
+                                  />
+                                ) : supplier.facebook_page ? (
+                                  <a
+                                    href={supplier.facebook_page}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate block"
+                                  >
+                                    {supplier.facebook_page}
+                                  </a>
+                                ) : (
+                                  <p className="text-sm text-gray-400 dark:text-gray-500">N/A</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {(isEditing || supplier.viber) && (
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                                <MessageCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                  Viber
+                                </p>
+                                {isEditing ? (
+                                  <Input
+                                    value={formData.viber}
+                                    onChange={(e) => handleChange("viber", e.target.value)}
+                                    className="text-sm"
+                                    placeholder="Viber"
+                                  />
+                                ) : (
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {supplier.viber || "N/A"}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {(isEditing || supplier.telegram) && (
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                  Telegram
+                                </p>
+                                {isEditing ? (
+                                  <Input
+                                    value={formData.telegram}
+                                    onChange={(e) => handleChange("telegram", e.target.value)}
+                                    className="text-sm"
+                                    placeholder="Telegram"
+                                  />
+                                ) : (
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {supplier.telegram || "N/A"}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {(isEditing || supplier.instagram) && (
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                              <div className="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg">
+                                <Instagram className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                  Instagram
+                                </p>
+                                {isEditing ? (
+                                  <Input
+                                    value={formData.instagram}
+                                    onChange={(e) => handleChange("instagram", e.target.value)}
+                                    className="text-sm"
+                                    placeholder="Instagram URL"
+                                  />
+                                ) : supplier.instagram ? (
+                                  <a
+                                    href={supplier.instagram}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate block"
+                                  >
+                                    {supplier.instagram}
+                                  </a>
+                                ) : (
+                                  <p className="text-sm text-gray-400 dark:text-gray-500">N/A</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Right Column - Additional Info */}
+                <div className="space-y-6">
+                  {/* Quick Stats */}
+                  <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900 dark:text-white">Supplier Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                          Supplier ID
+                        </p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white font-mono">
+                          {supplier.id}
+                        </p>
+                      </div>
+                      <Separator className="bg-gray-200 dark:bg-gray-700" />
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                          Status
+                        </p>
+                        {isEditing ? (
+                          <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Active">Active</SelectItem>
+                              <SelectItem value="Inactive">Inactive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className={`${
+                              supplier.status === "Active"
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-600"
+                            }`}
+                          >
+                            {supplier.status === "Active" ? (
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                            ) : (
+                              <XCircle className="w-3 h-3 mr-1" />
+                            )}
+                            {supplier.status}
+                          </Badge>
+                        )}
+                      </div>
+                      {(isEditing || supplier.rating) && (
+                        <>
+                          <Separator className="bg-gray-200 dark:bg-gray-700" />
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                              Rating
+                            </p>
+                            {isEditing ? (
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="number"
+                                  value={formData.rating}
+                                  onChange={(e) => handleChange("rating", parseFloat(e.target.value) || 0)}
+                                  className="w-24"
+                                  placeholder="0.0"
+                                  min="0"
+                                  max="5"
+                                  step="0.1"
+                                />
+                                <Star className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
+                              </div>
+                            ) : supplier.rating ? (
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-4 h-4 ${
+                                        i < Math.floor(supplier.rating!)
+                                          ? "text-yellow-400 fill-yellow-400"
+                                          : "text-gray-300 dark:text-gray-600"
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {supplier.rating.toFixed(1)}
+                                </span>
+                              </div>
+                            ) : null}
+                          </div>
+                        </>
                       )}
-                    </tbody>
-                  </table>
+                      {supplier.created_at && (
+                        <>
+                          <Separator className="bg-gray-200 dark:bg-gray-700" />
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              Created At
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {formatDate(supplier.created_at)}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                      {supplier.updated_at && (
+                        <>
+                          <Separator className="bg-gray-200 dark:bg-gray-700" />
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              Last Updated
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {formatDate(supplier.updated_at)}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>
           </div>
         </SidebarInset>
       </div>
-
-      <AddProductModal
-        isOpen={isProductModalOpen}
-        onClose={() => setIsProductModalOpen(false)}
-        onProductAdded={() => {
-          fetchProducts();
-          setIsProductModalOpen(false);
-        }}
-      />
     </SidebarProvider>
   );
 }
@@ -678,8 +804,8 @@ function SupplierProfileContent() {
 export default function SupplierProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+        <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     }>
       <SupplierProfileContent />

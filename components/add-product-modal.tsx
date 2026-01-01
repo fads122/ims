@@ -269,18 +269,18 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="!max-w-[95vw] !w-[95vw] !max-h-[95vh] !h-[95vh] overflow-y-auto p-8 !m-0 !top-[2.5vh] !left-[2.5vw] !translate-x-0 !translate-y-0 !bg-white/95 dark:!bg-gray-900/95 backdrop-blur-md">
-        <DialogHeader className="mb-6">
-          <DialogTitle className="text-3xl font-bold text-gray-900 dark:text-white">Add Equipment</DialogTitle>
-          <DialogDescription className="text-base text-gray-600 dark:text-gray-400">Add new equipment or products to your inventory</DialogDescription>
+      <DialogContent className="!max-w-[95vw] !w-[95vw] !max-h-[95vh] !h-[95vh] overflow-y-auto p-6 !m-0 !top-[2.5vh] !left-[2.5vw] !translate-x-0 !translate-y-0 !bg-white/95 dark:!bg-gray-900/95 backdrop-blur-md">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">Add Equipment</DialogTitle>
+          <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">Add new equipment or products to your inventory</DialogDescription>
         </DialogHeader>
 
         {/* Product Type Selector */}
-        <div className="flex gap-4 mb-8 border-b-2 border-gray-200 dark:border-gray-700 pb-6">
+        <div className="flex gap-2 mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
           <button
             onClick={() => setProductType("operational")}
-            className={`px-6 py-3 rounded-lg font-semibold text-base transition-all ${productType === "operational"
-              ? "bg-blue-600 text-white shadow-lg"
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${productType === "operational"
+              ? "bg-blue-600 text-white shadow-md"
               : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
           >
@@ -288,8 +288,8 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
           </button>
           <button
             onClick={() => setProductType("for-sale")}
-            className={`px-6 py-3 rounded-lg font-semibold text-base transition-all ${productType === "for-sale"
-              ? "bg-blue-600 text-white shadow-lg"
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${productType === "for-sale"
+              ? "bg-blue-600 text-white shadow-md"
               : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
           >
@@ -297,8 +297,8 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
           </button>
           <button
             onClick={() => setProductType("package")}
-            className={`px-6 py-3 rounded-lg font-semibold text-base transition-all ${productType === "package"
-              ? "bg-blue-600 text-white shadow-lg"
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${productType === "package"
+              ? "bg-blue-600 text-white shadow-md"
               : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
           >
@@ -307,11 +307,11 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
         </div>
 
         {/* Form Content */}
-        <div className="space-y-8">
+        <div className="space-y-4">
           {formInstances.map((formId, index) => (
-            <div key={formId} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50/50 dark:bg-gray-800/50">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div key={formId} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50/50 dark:bg-gray-800/50">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                   Equipment #{index + 1}
                 </h3>
                 {formInstances.length > 1 && (
@@ -327,7 +327,7 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
                   </Button>
                 )}
               </div>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {productType === "operational" && (
                   <OperationalEquipmentForm
                     formId={formId}
@@ -355,25 +355,27 @@ export default function AddProductModal({ isOpen, onClose, onProductAdded }: Add
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center gap-4 mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between items-center gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={handleAddForm}
-            className="px-6 py-3 text-base"
+            className="text-sm"
             disabled={loading}
           >
-            <Plus className="w-5 h-5 mr-2" />
+            <Plus className="w-4 h-4 mr-2" />
             Add Another Equipment
           </Button>
-          <div className="flex gap-4">
-            <Button variant="outline" onClick={onClose} className="px-6 py-3 text-base" disabled={loading}>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onClose} className="text-sm" disabled={loading}>
               Cancel
             </Button>
             <Button
               type="button"
+              size="sm"
               onClick={handleSubmitAll}
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 text-base"
+              className="bg-blue-600 hover:bg-blue-700 text-sm"
               disabled={loading}
             >
               {loading ? `Saving ${formInstances.length} Equipment...` : `Save All (${formInstances.length})`}
@@ -489,14 +491,14 @@ function OperationalEquipmentForm({
 
   return (
     <div>
-      <div className="space-y-8">
-        <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="product-type" className="text-base font-semibold">
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="product-type" className="text-sm font-medium">
               Product Type <span className="text-red-500">*</span>
             </Label>
             <Select value={formData.productType} onValueChange={(value) => handleChange("productType", value)}>
-              <SelectTrigger id="product-type" className="h-12 text-base">
+              <SelectTrigger id="product-type" className="h-9 text-sm">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
@@ -507,46 +509,46 @@ function OperationalEquipmentForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="text-sm font-medium">
               Name <span className="text-red-500">*</span>
             </Label>
-            <Input id="name" type="text" placeholder="Enter product name" className="h-12 text-base" value={formData.name} onChange={(e) => handleChange("name", e.target.value)} required />
+            <Input id="name" type="text" placeholder="Enter product name" className="h-9 text-sm" value={formData.name} onChange={(e) => handleChange("name", e.target.value)} required />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="brand" className="text-base font-semibold">Brand</Label>
-            <Input id="brand" type="text" placeholder="Enter brand" className="h-12 text-base" value={formData.brand} onChange={(e) => handleChange("brand", e.target.value)} />
+          <div className="space-y-1.5">
+            <Label htmlFor="brand" className="text-sm font-medium">Brand</Label>
+            <Input id="brand" type="text" placeholder="Enter brand" className="h-9 text-sm" value={formData.brand} onChange={(e) => handleChange("brand", e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="model" className="text-base font-semibold">Model</Label>
-            <Input id="model" type="text" placeholder="Enter model" className="h-12 text-base" value={formData.model} onChange={(e) => handleChange("model", e.target.value)} />
+          <div className="space-y-1.5">
+            <Label htmlFor="model" className="text-sm font-medium">Model</Label>
+            <Input id="model" type="text" placeholder="Enter model" className="h-9 text-sm" value={formData.model} onChange={(e) => handleChange("model", e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="quantity" className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label htmlFor="quantity" className="text-sm font-medium">
               Quantity <span className="text-red-500">*</span>
             </Label>
-            <Input id="quantity" type="number" placeholder="0" className="h-12 text-base" value={formData.quantity} onChange={(e) => handleChange("quantity", parseInt(e.target.value) || 0)} />
+            <Input id="quantity" type="number" placeholder="0" className="h-9 text-sm" value={formData.quantity} onChange={(e) => handleChange("quantity", parseInt(e.target.value) || 0)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="box-quantity" className="text-base font-semibold">Box Quantity</Label>
-            <Input id="box-quantity" type="number" placeholder="0" className="h-12 text-base" value={formData.boxQuantity} onChange={(e) => handleChange("boxQuantity", parseInt(e.target.value) || 0)} />
+          <div className="space-y-1.5">
+            <Label htmlFor="box-quantity" className="text-sm font-medium">Box Quantity</Label>
+            <Input id="box-quantity" type="number" placeholder="0" className="h-9 text-sm" value={formData.boxQuantity} onChange={(e) => handleChange("boxQuantity", parseInt(e.target.value) || 0)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="serial-number" className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label htmlFor="serial-number" className="text-sm font-medium">
               Serial Number <span className="text-red-500">*</span>
             </Label>
-            <Input id="serial-number" type="text" placeholder="Auto-generates QR code and barcode" className="h-12 text-base" value={formData.serialNumber} onChange={(e) => handleChange("serialNumber", e.target.value)} />
+            <Input id="serial-number" type="text" placeholder="Auto-generates QR code and barcode" className="h-9 text-sm" value={formData.serialNumber} onChange={(e) => handleChange("serialNumber", e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="date-acquired" className="text-base font-semibold">Date Acquired</Label>
-            <Input id="date-acquired" type="date" className="h-12 text-base" value={formData.dateAcquired} onChange={(e) => handleChange("dateAcquired", e.target.value)} />
+          <div className="space-y-1.5">
+            <Label htmlFor="date-acquired" className="text-sm font-medium">Date Acquired</Label>
+            <Input id="date-acquired" type="date" className="h-9 text-sm" value={formData.dateAcquired} onChange={(e) => handleChange("dateAcquired", e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="condition" className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label htmlFor="condition" className="text-sm font-medium">
               Condition <span className="text-red-500">*</span>
             </Label>
             <Select value={formData.condition} onValueChange={(value) => handleChange("condition", value)}>
-              <SelectTrigger id="condition" className="h-12 text-base">
+              <SelectTrigger id="condition" className="h-9 text-sm">
                 <SelectValue placeholder="Select condition" />
               </SelectTrigger>
               <SelectContent>
@@ -556,10 +558,10 @@ function OperationalEquipmentForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="damage-status" className="text-base font-semibold">Damage Status</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="damage-status" className="text-sm font-medium">Damage Status</Label>
             <Select value={formData.damageStatus} onValueChange={(value) => handleChange("damageStatus", value)}>
-              <SelectTrigger id="damage-status" className="h-12 text-base">
+              <SelectTrigger id="damage-status" className="h-9 text-sm">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
@@ -571,7 +573,7 @@ function OperationalEquipmentForm({
         </div>
 
         <div>
-          <Label className="text-base font-semibold text-foreground">Upload Images</Label>
+          <Label className="text-sm font-medium text-foreground">Upload Images</Label>
           <input
             type="file"
             ref={fileInputRef}
@@ -584,10 +586,10 @@ function OperationalEquipmentForm({
             onClick={() => fileInputRef.current?.click()}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            className="border-2 border-dashed border-input rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
+            className="border-2 border-dashed border-input rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50 mt-1.5"
           >
-            <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-base text-muted-foreground">Drag & drop images here or click to upload</p>
+            <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Drag & drop images here or click to upload</p>
           </div>
 
           {previewUrls.length > 0 && (
@@ -756,12 +758,12 @@ function ForSaleProductForm({
 
   return (
     <div>
-      <div className="space-y-8">
-        <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">Category</Label>
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Category</Label>
             <Select value={formData.category} onValueChange={(value) => handleChange("category", value)}>
-              <SelectTrigger className="h-12 text-base w-full">
+              <SelectTrigger className="h-9 text-sm w-full">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -771,20 +773,20 @@ function ForSaleProductForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">Product Model</Label>
-            <Input type="text" placeholder="Enter model" className="h-12 text-base" value={formData.productModel} onChange={(e) => handleChange("productModel", e.target.value)} />
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Product Model</Label>
+            <Input type="text" placeholder="Enter model" className="h-9 text-sm" value={formData.productModel} onChange={(e) => handleChange("productModel", e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">Product Brand/Name</Label>
-            <Input type="text" placeholder="Enter brand/name" className="h-12 text-base" value={formData.productBrand} onChange={(e) => handleChange("productBrand", e.target.value)} />
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Product Brand/Name</Label>
+            <Input type="text" placeholder="Enter brand/name" className="h-9 text-sm" value={formData.productBrand} onChange={(e) => handleChange("productBrand", e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Supplier <span className="text-red-500">*</span>
             </Label>
             <Select value={formData.supplier} onValueChange={(value) => handleChange("supplier", value)}>
-              <SelectTrigger className="h-12 text-base w-full">
+              <SelectTrigger className="h-9 text-sm w-full">
                 <SelectValue placeholder="Select supplier" />
               </SelectTrigger>
               <SelectContent>
@@ -800,40 +802,40 @@ function ForSaleProductForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Supplier Cost <span className="text-red-500">*</span>
             </Label>
-            <Input type="number" step="0.01" placeholder="0.00" className="h-12 text-base" value={formData.supplierCost} onChange={(e) => handleChange("supplierCost", parseFloat(e.target.value) || 0)} />
+            <Input type="number" step="0.01" placeholder="0.00" className="h-9 text-sm" value={formData.supplierCost} onChange={(e) => handleChange("supplierCost", parseFloat(e.target.value) || 0)} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               SRP <span className="text-red-500">*</span>
             </Label>
-            <Input type="number" step="0.01" placeholder="0.00" className="h-12 text-base" value={formData.srp} onChange={(e) => handleChange("srp", parseFloat(e.target.value) || 0)} />
+            <Input type="number" step="0.01" placeholder="0.00" className="h-9 text-sm" value={formData.srp} onChange={(e) => handleChange("srp", parseFloat(e.target.value) || 0)} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Quantity <span className="text-red-500">*</span>
             </Label>
-            <Input type="number" placeholder="0" className="h-12 text-base" value={formData.quantity} onChange={(e) => handleChange("quantity", parseInt(e.target.value) || 0)} />
+            <Input type="number" placeholder="0" className="h-9 text-sm" value={formData.quantity} onChange={(e) => handleChange("quantity", parseInt(e.target.value) || 0)} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">Box Quantity</Label>
-            <Input type="number" placeholder="0" className="h-12 text-base" value={formData.boxQuantity} onChange={(e) => handleChange("boxQuantity", parseInt(e.target.value) || 0)} />
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Box Quantity</Label>
+            <Input type="number" placeholder="0" className="h-9 text-sm" value={formData.boxQuantity} onChange={(e) => handleChange("boxQuantity", parseInt(e.target.value) || 0)} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Location <span className="text-red-500">*</span>
             </Label>
-            <Input type="text" placeholder="Enter location" className="h-12 text-base" value={formData.location} onChange={(e) => handleChange("location", e.target.value)} />
+            <Input type="text" placeholder="Enter location" className="h-9 text-sm" value={formData.location} onChange={(e) => handleChange("location", e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Condition <span className="text-red-500">*</span>
             </Label>
             <Select value={formData.condition} onValueChange={(value) => handleChange("condition", value)}>
-              <SelectTrigger className="h-12 text-base w-full">
+              <SelectTrigger className="h-9 text-sm w-full">
                 <SelectValue placeholder="Select condition" />
               </SelectTrigger>
               <SelectContent>
@@ -844,25 +846,25 @@ function ForSaleProductForm({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-base font-semibold text-gray-900 dark:text-gray-100">Product Specifications/Description</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Product Specifications/Description</Label>
           <div className="flex gap-2">
             <Textarea
-              rows={4}
+              rows={3}
               placeholder="Enter description"
-              className="text-base resize-none text-gray-900 dark:text-gray-100"
+              className="text-sm resize-none text-gray-900 dark:text-gray-100"
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
             />
-            <Button variant="outline" className="h-fit text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-              <Sparkles className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" className="h-fit text-sm">
+              <Sparkles className="w-3 h-3 mr-1.5" />
               AI Generate
             </Button>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-base font-semibold text-gray-900 dark:text-gray-100">Upload Brochure</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Upload Brochure</Label>
           <input
             type="file"
             ref={brochureInputRef}
@@ -889,18 +891,18 @@ function ForSaleProductForm({
               }
             }}
             onDragOver={handleDragOver}
-            className="border-2 border-dashed border-input rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
+            className="border-2 border-dashed border-input rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
           >
-            <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-base text-muted-foreground">Drag & drop brochure here or click to upload</p>
+            <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Drag & drop brochure here or click to upload</p>
             {brochureFile && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Selected: {brochureFile.name}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5">Selected: {brochureFile.name}</p>
             )}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-base font-semibold text-gray-900 dark:text-gray-100">Product Images</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Product Images</Label>
           <input
             type="file"
             ref={fileInputRef}
@@ -913,10 +915,10 @@ function ForSaleProductForm({
             onClick={() => fileInputRef.current?.click()}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            className="border-2 border-dashed border-input rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
+            className="border-2 border-dashed border-input rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
           >
-            <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-base text-muted-foreground">Drag & drop images here or click to upload</p>
+            <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Drag & drop images here or click to upload</p>
           </div>
 
           {previewUrls.length > 0 && (
@@ -1144,25 +1146,25 @@ function PackageBundleForm({
 
   return (
     <div>
-      <div className="space-y-8">
+      <div className="space-y-4">
         {/* Package Information */}
-        <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Package Name <span className="text-red-500">*</span>
             </Label>
             <Input
               type="text"
               placeholder="e.g., AMD Ryzen AM4 Bundle"
-              className="h-12 text-base"
+              className="h-9 text-sm"
               value={formData.packageName}
               onChange={(e) => handleChange("packageName", e.target.value)}
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">Package Category</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Package Category</Label>
             <Select value={formData.packageCategory} onValueChange={(value) => handleChange("packageCategory", value)}>
-              <SelectTrigger className="h-12 text-base w-full">
+              <SelectTrigger className="h-9 text-sm w-full">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -1172,12 +1174,12 @@ function PackageBundleForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Ownership Type <span className="text-red-500">*</span>
             </Label>
             <Select value={formData.ownershipType} onValueChange={(value) => handleChange("ownershipType", value)}>
-              <SelectTrigger className="h-12 text-base w-full">
+              <SelectTrigger className="h-9 text-sm w-full">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
@@ -1189,38 +1191,39 @@ function PackageBundleForm({
         </div>
 
         {/* Package Description */}
-        <div className="space-y-2">
-          <Label className="text-base font-semibold text-gray-900 dark:text-gray-100">Package Description</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Package Description</Label>
           <div className="flex gap-2">
             <Textarea
-              rows={4}
+              rows={3}
               placeholder="Enter description"
-              className="text-base resize-none text-gray-900 dark:text-gray-100 flex-1"
+              className="text-sm resize-none text-gray-900 dark:text-gray-100 flex-1"
               value={formData.packageDescription}
               onChange={(e) => handleChange("packageDescription", e.target.value)}
             />
             <Button
               type="button"
               variant="outline"
-              className="h-fit text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
+              size="sm"
+              className="h-fit text-sm"
               disabled={formData.packageItems.length === 0}
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="w-3 h-3 mr-1.5" />
               AI Generate
             </Button>
           </div>
         </div>
 
         {/* Package Contents */}
-        <div className="space-y-2">
-          <Label className="text-base font-semibold text-gray-900 dark:text-gray-100">Package Contents</Label>
-          <div className="border border-input rounded-lg p-4 space-y-4 bg-muted/30">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Package Contents</Label>
+          <div className="border border-input rounded-lg p-3 space-y-3 bg-muted/30">
             {/* Add Item Form */}
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs text-gray-600 dark:text-gray-400">Category <span className="text-red-500">*</span></Label>
                 <Select value={currentItem.itemCategory} onValueChange={(value) => handleItemChange("itemCategory", value)}>
-                  <SelectTrigger className="h-10 w-full">
+                  <SelectTrigger className="h-8 text-xs w-full">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1241,7 +1244,7 @@ function PackageBundleForm({
                 <Input
                   type="text"
                   placeholder="Model"
-                  className="h-10 text-gray-900 dark:text-gray-100"
+                  className="h-8 text-xs text-gray-900 dark:text-gray-100"
                   value={currentItem.itemModel}
                   onChange={(e) => handleItemChange("itemModel", e.target.value)}
                 />
@@ -1251,7 +1254,7 @@ function PackageBundleForm({
                 <Input
                   type="text"
                   placeholder="Brand"
-                  className="h-10 text-gray-900 dark:text-gray-100"
+                  className="h-8 text-xs text-gray-900 dark:text-gray-100"
                   value={currentItem.itemBrand}
                   onChange={(e) => handleItemChange("itemBrand", e.target.value)}
                 />
@@ -1261,7 +1264,7 @@ function PackageBundleForm({
                 <Input
                   type="number"
                   placeholder="1"
-                  className="h-10 text-gray-900 dark:text-gray-100"
+                  className="h-8 text-xs text-gray-900 dark:text-gray-100"
                   value={currentItem.itemQuantity}
                   onChange={(e) => handleItemChange("itemQuantity", parseInt(e.target.value) || 1)}
                   min="1"
@@ -1270,7 +1273,7 @@ function PackageBundleForm({
               <div className="space-y-1">
                 <Label className="text-xs text-gray-600 dark:text-gray-400">Condition</Label>
                 <Select value={currentItem.itemCondition} onValueChange={(value) => handleItemChange("itemCondition", value)}>
-                  <SelectTrigger className="h-10 w-full">
+                  <SelectTrigger className="h-8 text-xs w-full">
                     <SelectValue placeholder="Condition" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1284,7 +1287,7 @@ function PackageBundleForm({
               type="button"
               variant="outline"
               size="sm"
-              className="text-gray-900 dark:text-gray-100"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
               onClick={handleAddItem}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -1326,13 +1329,13 @@ function PackageBundleForm({
         </div>
 
         {/* Pricing and Supplier */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Supplier <span className="text-red-500">*</span>
             </Label>
             <Select value={formData.supplier} onValueChange={(value) => handleChange("supplier", value)}>
-              <SelectTrigger className="h-12 text-base w-full">
+              <SelectTrigger className="h-9 text-sm w-full">
                 <SelectValue placeholder="Select supplier" />
               </SelectTrigger>
               <SelectContent>
@@ -1348,40 +1351,40 @@ function PackageBundleForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Package Cost <span className="text-red-500">*</span>
             </Label>
             <Input
               type="number"
               step="0.01"
               placeholder="0.00"
-              className="h-12 text-base"
+              className="h-9 text-sm"
               value={formData.packageCost}
               onChange={(e) => handleChange("packageCost", parseFloat(e.target.value) || 0)}
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Package SRP <span className="text-red-500">*</span>
             </Label>
             <Input
               type="number"
               step="0.01"
               placeholder="0.00"
-              className="h-12 text-base"
+              className="h-9 text-sm"
               value={formData.packageSrp}
               onChange={(e) => handleChange("packageSrp", parseFloat(e.target.value) || 0)}
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Package Quantity <span className="text-red-500">*</span>
             </Label>
             <Input
               type="number"
               placeholder="0"
-              className="h-12 text-base"
+              className="h-9 text-sm"
               value={formData.packageQuantity}
               onChange={(e) => handleChange("packageQuantity", parseInt(e.target.value) || 0)}
             />
@@ -1389,25 +1392,25 @@ function PackageBundleForm({
         </div>
 
         {/* Location and Condition */}
-        <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Location <span className="text-red-500">*</span>
             </Label>
             <Input
               type="text"
               placeholder="Enter location"
-              className="h-12 text-base"
+              className="h-9 text-sm"
               value={formData.location}
               onChange={(e) => handleChange("location", e.target.value)}
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">
               Condition <span className="text-red-500">*</span>
             </Label>
             <Select value={formData.condition} onValueChange={(value) => handleChange("condition", value)}>
-              <SelectTrigger className="h-12 text-base w-full">
+              <SelectTrigger className="h-9 text-sm w-full">
                 <SelectValue placeholder="Select condition" />
               </SelectTrigger>
               <SelectContent>
@@ -1416,12 +1419,12 @@ function PackageBundleForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label className="text-base font-semibold">Box Quantity</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Box Quantity</Label>
             <Input
               type="number"
               placeholder="0"
-              className="h-12 text-base"
+              className="h-9 text-sm"
               value={formData.boxQuantity}
               onChange={(e) => handleChange("boxQuantity", parseInt(e.target.value) || 0)}
             />
@@ -1429,8 +1432,8 @@ function PackageBundleForm({
         </div>
 
         {/* Upload Brochure */}
-        <div className="space-y-2">
-          <Label className="text-base font-semibold text-gray-900 dark:text-gray-100">Upload Brochure (PDF, DOC, DOCX, PPT, PPTX - max 10MB)</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Upload Brochure (PDF, DOC, DOCX, PPT, PPTX - max 10MB)</Label>
           <input
             type="file"
             ref={brochureInputRef}
@@ -1461,19 +1464,19 @@ function PackageBundleForm({
               }
             }}
             onDragOver={handleDragOver}
-            className="border-2 border-dashed border-input rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
+            className="border-2 border-dashed border-input rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
           >
-            <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-base text-muted-foreground">Drag & drop brochure here or click to upload</p>
+            <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Drag & drop brochure here or click to upload</p>
             {brochureFile && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Selected: {brochureFile.name}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5">Selected: {brochureFile.name}</p>
             )}
           </div>
         </div>
 
         {/* Upload Package Images */}
-        <div className="space-y-2">
-          <Label className="text-base font-semibold text-gray-900 dark:text-gray-100">Upload Package Images (JPG, PNG, GIF - max 5MB each)</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Upload Package Images (JPG, PNG, GIF - max 5MB each)</Label>
           <input
             type="file"
             ref={fileInputRef}
@@ -1486,10 +1489,10 @@ function PackageBundleForm({
             onClick={() => fileInputRef.current?.click()}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            className="border-2 border-dashed border-input rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
+            className="border-2 border-dashed border-input rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer bg-muted/50"
           >
-            <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-base text-muted-foreground">Drag & drop images here or click to upload</p>
+            <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Drag & drop images here or click to upload</p>
           </div>
 
           {previewUrls.length > 0 && (

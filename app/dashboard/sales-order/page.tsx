@@ -6,6 +6,7 @@ import { Search, ShoppingCart, Truck, CheckCircle, Calendar, Eye, Edit, Trash2, 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
+import Breadcrumbs from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -474,6 +475,8 @@ function SalesOrderContent() {
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
             <div className="p-6 lg:p-8 space-y-6">
+              {/* Breadcrumbs */}
+              <Breadcrumbs />
               {/* Header Section */}
               <div className="flex items-center justify-between">
                 <div>

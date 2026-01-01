@@ -2,10 +2,11 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Filter, FileText, Eye, Edit, Trash2, Download, Calendar, MoreHorizontal, CheckCircle } from "lucide-react";
+import { Plus, Search, Filter, FileText, Eye, Edit, Trash2, Download, Calendar, MoreHorizontal, CheckCircle, LayoutGrid, Table2 } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
+import Breadcrumbs from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -97,6 +98,7 @@ interface ProjectProposal {
 function ProjectProposalsContent() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [loading, setLoading] = useState(true);
   const [proposals, setProposals] = useState<ProjectProposal[]>([]);
   const [filteredProposals, setFilteredProposals] = useState<ProjectProposal[]>([]);
@@ -653,6 +655,8 @@ function ProjectProposalsContent() {
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
             <div className="p-6 lg:p-8 space-y-6">
+              {/* Breadcrumbs */}
+              <Breadcrumbs />
               {/* Header Section */}
               <div className="flex items-center justify-between">
                 <div>
@@ -699,9 +703,36 @@ function ProjectProposalsContent() {
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* View Toggle */}
+                <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-700 rounded-lg p-1 bg-white dark:bg-gray-800">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode("cards")}
+                    className={`h-8 px-3 ${
+                      viewMode === "cards"
+                        ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode("table")}
+                    className={`h-8 px-3 ${
+                      viewMode === "table"
+                        ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Table2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
 
-              {/* Proposals Grid */}
+              {/* Proposals Grid/Table */}
               {filteredProposals.length === 0 ? (
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-12 text-center">
                   <FileText className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
@@ -712,8 +743,11 @@ function ProjectProposalsContent() {
                       : "Create your first proposal to get started"}
                   </p>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              ) : viewMode === "cards" ? (
+                <div 
+                  key="cards-view"
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-slide-up"
+                >
                   {filteredProposals.map((proposal) => (
                     <Card
                       key={proposal.id}
@@ -841,6 +875,139 @@ function ProjectProposalsContent() {
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              ) : (
+                /* Table View */
+                <div 
+                  key="table-view"
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden animate-fade-in-slide-up"
+                >
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                          <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Proposal Number</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Title</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Client</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Total Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {filteredProposals.map((proposal) => (
+                          <tr key={proposal.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 bg-white dark:bg-gray-800">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <p className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                                {proposal.proposal_number}
+                              </p>
+                            </td>
+                            <td className="px-6 py-4">
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {proposal.title}
+                              </p>
+                              {proposal.description && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
+                                  {proposal.description}
+                                </p>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <p className="text-sm text-gray-900 dark:text-white">
+                                {proposal.client_name || "No Client"}
+                              </p>
+                              {proposal.client_email && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {proposal.client_email}
+                                </p>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                <Calendar className="w-3.5 h-3.5" />
+                                <span>{formatDate(proposal.proposal_date)}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <Badge className={getStatusColor(proposal.status)}>
+                                {proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1)}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                ₱{proposal.total_amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={async () => {
+                                      setSelectedProposal(proposal);
+                                      setIsViewModalOpen(true);
+                                      setLoadingDetails(true);
+                                      try {
+                                        const response = await fetch(`/api/proposals?id=${proposal.id}`);
+                                        if (response.ok) {
+                                          const result = await response.json();
+                                          setViewProposalDetails(result.data);
+                                        }
+                                      } catch (error) {
+                                        console.error("Error loading proposal details:", error);
+                                      } finally {
+                                        setLoadingDetails(false);
+                                      }
+                                    }}
+                                  >
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedProposal(proposal);
+                                      setIsEditModalOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleExportPDF(proposal)}
+                                  >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download PDF
+                                  </DropdownMenuItem>
+                                  {proposal.status !== "delivered" && (
+                                    <DropdownMenuItem onClick={() => handleMarkAsDelivered(proposal)}>
+                                      <CheckCircle className="mr-2 h-4 w-4" />
+                                      Mark as Delivered
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedProposal(proposal);
+                                      setIsDeleteModalOpen(true);
+                                    }}
+                                    className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
 

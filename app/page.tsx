@@ -9,6 +9,10 @@ import { useSearchParams } from "next/navigation";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { LottieAnimation } from "@/components/lottie-animation";
+import sellAnimationData from "@/lib/animations/sell-animation.json";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, Package, BarChart3, Wrench, FileText, ShoppingCart, Building2, QrCode, DollarSign, ClipboardList } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -49,6 +53,39 @@ function SuccessMessage() {
 }
 
 export default function Home() {
+  const [stats, setStats] = useState({
+    activeUsers: 10000,
+    uptime: 99.9,
+    support: "24/7",
+    totalProducts: 0,
+    totalSuppliers: 0,
+    totalProjects: 0,
+  });
+
+  // Fetch landing page stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/landing/stats", {
+          cache: 'no-store', // Ensure fresh data on each load
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Fetched stats:", data); // Debug log
+          setStats(data);
+        } else {
+          console.error("Failed to fetch stats:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+    fetchStats();
+    // Refresh stats every 30 seconds
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Animation refs
   const badgeRef = useScrollAnimation({
     from: { opacity: 0, scale: 0.8, y: 20 },
@@ -64,21 +101,26 @@ export default function Home() {
     delay: 0.2,
   });
 
-  const buttonsRef = useScrollAnimation({
-    from: { opacity: 0, y: 30 },
-    to: { opacity: 1, y: 0 },
-    duration: 0.8,
-    delay: 0.4,
-    stagger: 100,
-  });
+  // Buttons should be visible immediately, so we'll animate them on mount
+  const buttonsRef = useRef<HTMLDivElement>(null);
 
-  const statsRef = useScrollAnimation({
-    from: { opacity: 0, y: 30 },
-    to: { opacity: 1, y: 0 },
-    duration: 0.8,
-    delay: 0.6,
-    stagger: 150,
-  });
+  useEffect(() => {
+    if (buttonsRef.current) {
+      gsap.fromTo(
+        buttonsRef.current.children,
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: 0.4,
+          stagger: 0.1,
+          ease: "power3.out",
+        }
+      );
+    }
+  }, []);
+
 
   const dashboardRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
@@ -291,7 +333,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-24 lg:pb-32 px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden pt-6 sm:pt-8 lg:pt-10 pb-16 sm:pb-24 lg:pb-32 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
@@ -333,90 +375,37 @@ export default function Home() {
                 ref={descriptionRef as React.RefObject<HTMLParagraphElement>}
                 className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 leading-relaxed"
               >
-                QSales is a powerful inventory management system that helps you
-                track stock levels, manage orders, and optimize your business
-                operations. Built for modern businesses.
+                QSales is a comprehensive inventory management system designed for businesses that handle operational equipment, for-sale products, and package bundles. Track equipment with serial numbers, manage supplier relationships, create project proposals, and streamline your entire inventory workflow.
               </p>
               <div
                 ref={buttonsRef as React.RefObject<HTMLDivElement>}
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4"
               >
-                <button className="px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white rounded-lg text-sm sm:text-base font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl">
-                  Start Free Trial
-                </button>
-              </div>
-              <div
-                ref={statsRef as React.RefObject<HTMLDivElement>}
-                className="mt-8 sm:mt-12 flex flex-wrap items-center gap-4 sm:gap-6 lg:gap-8 text-xs sm:text-sm text-gray-600 dark:text-gray-400"
-              >
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                    10K+
-                  </div>
-                  <div>Active Users</div>
-                </div>
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                    99.9%
-                  </div>
-                  <div>Uptime</div>
-                </div>
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                    24/7
-                  </div>
-                  <div>Support</div>
-                </div>
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base px-6 sm:px-8 py-6 sm:py-7"
+                >
+                  Get Started
+                  <TrendingUp className="w-4 h-4 ml-2" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 text-sm sm:text-base px-6 sm:px-8 py-6 sm:py-7 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  Watch Demo
+                </Button>
               </div>
             </div>
-            <div className="relative" ref={dashboardRef}>
-              <div className="relative z-10 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-2xl">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg">
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                        Dashboard Overview
-                      </h3>
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                      <div className="dashboard-card bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
-                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                          Total Products
-                        </div>
-                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                          1,234
-                        </div>
-                      </div>
-                      <div className="dashboard-card bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
-                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                          Low Stock
-                        </div>
-                        <div className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
-                          23
-                        </div>
-                      </div>
-                      <div className="dashboard-card bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
-                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                          Orders Today
-                        </div>
-                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                          45
-                        </div>
-                      </div>
-                      <div className="dashboard-card bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
-                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                          Revenue
-                        </div>
-                        <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
-                          $12.5K
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="relative -mt-16 sm:-mt-24 lg:-mt-32" ref={dashboardRef}>
+              <div className="w-full h-full min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] flex items-center justify-center">
+                <LottieAnimation
+                  animationData={sellAnimationData}
+                  className="w-full h-full"
+                  loop={true}
+                  autoplay={true}
+                />
               </div>
-              <div className="absolute -bottom-2 sm:-bottom-4 -right-2 sm:-right-4 w-full h-full bg-blue-200 dark:bg-blue-900/20 rounded-xl sm:rounded-2xl -z-10"></div>
             </div>
           </div>
         </div>
@@ -450,55 +439,78 @@ export default function Home() {
           <div ref={featuresRef} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {[
               {
-                icon: "📦",
-                title: "Real-Time Tracking",
+                icon: Wrench,
+                title: "Operational Equipment Management",
                 description:
-                  "Monitor your inventory levels in real-time with instant updates and alerts.",
+                  "Track operational equipment with serial numbers, quantities, conditions, and damage status. Monitor equipment usage across projects.",
               },
               {
-                icon: "📊",
-                title: "Advanced Analytics",
+                icon: Package,
+                title: "For-Sale Products Catalog",
                 description:
-                  "Get insights into your inventory trends with comprehensive analytics and reports.",
+                  "Manage your product inventory with supplier information, costs, SRP, locations, and detailed descriptions. Track quantities and box quantities.",
               },
               {
-                icon: "🔄",
-                title: "Automated Reordering",
+                icon: ShoppingCart,
+                title: "Package & Bundle Deals",
                 description:
-                  "Set up automatic reorder points to never run out of stock again.",
+                  "Create and manage package bundles with multiple products. Set custom pricing and track bundle inventory separately.",
               },
               {
-                icon: "📱",
-                title: "Mobile Access",
+                icon: ClipboardList,
+                title: "Project Proposals",
                 description:
-                  "Manage your inventory from anywhere with our mobile-responsive interface.",
+                  "Create detailed project proposals with equipment lists, pricing, and client information. Track proposal status and manage approvals.",
               },
               {
-                icon: "🔒",
-                title: "Secure & Reliable",
+                icon: Building2,
+                title: "Supplier Management",
                 description:
-                  "Your data is protected with enterprise-grade security and 99.9% uptime.",
+                  "Maintain a comprehensive supplier directory with contact information, status tracking, and supplier profiles for easy reference.",
               },
               {
-                icon: "🔗",
-                title: "Easy Integration",
+                icon: FileText,
+                title: "Sales Orders & Delivery",
                 description:
-                  "Connect with your existing tools and systems seamlessly.",
+                  "Manage delivery receipts, track order status, and monitor sales orders with detailed delivery information and file attachments.",
               },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="feature-card bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
-              >
-                <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">{feature.icon}</div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
+              {
+                icon: QrCode,
+                title: "QR & Barcode Generation",
+                description:
+                  "Generate QR codes and barcodes for all inventory items. Print labels and track items efficiently with scanning capabilities.",
+              },
+              {
+                icon: DollarSign,
+                title: "Cost Tracking & Updates",
+                description:
+                  "Track cost history for equipment and products. Update costs over time and view pricing trends with comprehensive cost analytics.",
+              },
+              {
+                icon: BarChart3,
+                title: "Analytics & Reports",
+                description:
+                  "Get insights into inventory trends, equipment usage, project metrics, and cost analysis with comprehensive dashboard analytics.",
+              },
+            ].map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className="feature-card bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 mb-3 sm:mb-4 flex items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                    <IconComponent className="w-6 h-6 sm:w-7 sm:h-7" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -528,19 +540,19 @@ export default function Home() {
               <div className="space-y-4 sm:space-y-6">
                 {[
                   {
-                    title: "Save Time & Money",
+                    title: "Centralized Inventory Control",
                     description:
-                      "Reduce manual work and eliminate costly inventory errors with automated processes.",
+                      "Manage operational equipment, for-sale products, and package bundles all in one place. Track serial numbers, quantities, conditions, and locations with ease.",
                   },
                   {
-                    title: "Scale Your Business",
+                    title: "Streamlined Project Management",
                     description:
-                      "Grow your business without worrying about inventory management complexity.",
+                      "Create project proposals, assign equipment to projects, and track usage. Generate professional proposals with detailed equipment lists and pricing.",
                   },
                   {
-                    title: "Make Data-Driven Decisions",
+                    title: "Complete Supply Chain Visibility",
                     description:
-                      "Access comprehensive reports and analytics to make informed business decisions.",
+                      "Manage suppliers, track costs, monitor delivery receipts, and maintain a complete client directory. Get full visibility into your supply chain operations.",
                   },
                 ].map((benefit, index) => (
                   <div key={index} className="benefit-item flex gap-3 sm:gap-4">
@@ -579,9 +591,24 @@ export default function Home() {
                   </h3>
                   <div className="space-y-3 sm:space-y-4">
                     {[
-                      { label: "Time Saved", value: "40%", width: "40%", color: "bg-blue-600" },
-                      { label: "Cost Reduction", value: "25%", width: "25%", color: "bg-green-600" },
-                      { label: "Accuracy", value: "99.8%", width: "99.8%", color: "bg-purple-600" },
+                      {
+                        label: "Total Products",
+                        value: stats.totalProducts.toString(),
+                        width: stats.totalProducts > 0 ? `${Math.min((stats.totalProducts / 100) * 100, 100)}%` : "0%",
+                        color: "bg-blue-600"
+                      },
+                      {
+                        label: "Active Suppliers",
+                        value: stats.totalSuppliers.toString(),
+                        width: stats.totalSuppliers > 0 ? `${Math.min((stats.totalSuppliers / 50) * 100, 100)}%` : "0%",
+                        color: "bg-green-600"
+                      },
+                      {
+                        label: "Project Proposals",
+                        value: stats.totalProjects.toString(),
+                        width: stats.totalProjects > 0 ? `${Math.min((stats.totalProjects / 25) * 100, 100)}%` : "0%",
+                        color: "bg-purple-600"
+                      },
                     ].map((metric, index) => (
                       <div key={index}>
                         <div className="flex justify-between mb-2">
@@ -626,8 +653,7 @@ export default function Home() {
             textAlign="center"
           />
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 px-4">
-            Join thousands of businesses using QSales to streamline their
-            operations.
+            Join businesses using QSales to manage operational equipment, track products, create project proposals, and streamline their entire inventory workflow.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm sm:text-base font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-lg">

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, MoreVertical, Eye, Edit, Trash2, Building2 } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit, Trash2, Building2, Eye } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
+import Breadcrumbs from "@/components/breadcrumbs";
 import AddEditSupplierDialog from "@/components/add-edit-supplier-dialog";
 import DeleteConfirmDialog from "@/components/delete-confirm-dialog";
 import {
@@ -157,6 +158,10 @@ export default function SupplierListPage() {
     setDeleteSupplier(supplier);
   };
 
+  const handleView = (supplier: Supplier) => {
+    router.push(`/dashboard/supplier-profile?id=${supplier.id}`);
+  };
+
   const confirmDelete = async () => {
     if (!deleteSupplier) return;
 
@@ -205,6 +210,8 @@ export default function SupplierListPage() {
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
             <div className="p-6 lg:p-8 space-y-6">
+              {/* Breadcrumbs */}
+              <Breadcrumbs />
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div>
@@ -331,7 +338,7 @@ export default function SupplierListPage() {
                                   <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => router.push(`/dashboard/supplier-profile?id=${supplier.id}`)}>
+                                  <DropdownMenuItem onClick={() => handleView(supplier)}>
                                     <Eye className="w-4 h-4 mr-2" />
                                     View
                                   </DropdownMenuItem>

@@ -9,6 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import QRBarcodeModal from "@/components/qr-barcode-modal";
 
 interface ProductTableProps {
@@ -260,17 +263,24 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-        <div className="text-gray-600 dark:text-gray-400">Loading products...</div>
-      </div>
+      <Card className="border-2 shadow-md">
+        <CardContent className="p-12 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Loading products...</div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
-        <div className="text-red-600 dark:text-red-400">Error: {error}</div>
-      </div>
+      <Card className="border-2 border-red-200 dark:border-red-800 shadow-md">
+        <CardContent className="p-8 text-center">
+          <div className="text-red-600 dark:text-red-400 font-medium">Error: {error}</div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -280,63 +290,69 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
   return (
     <div className="space-y-4">
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
-        <button
+      <div className="flex gap-2 border-b-2 border-gray-200 dark:border-gray-700 pb-0">
+        <Button
+          variant="ghost"
           onClick={() => {
             setActiveTab("for-sale");
             setCurrentPage(1);
             setExpandedGroups(new Set());
           }}
-          className={`px-4 py-2 font-medium transition-colors ${
+          className={`rounded-b-none border-b-2 transition-all duration-200 ${
             activeTab === "for-sale"
-              ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              ? "border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20 font-semibold"
+              : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
           }`}
         >
           For Sale ({filteredForSale.length} groups)
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => {
             setActiveTab("operational");
             setExpandedGroups(new Set());
           }}
-          className={`px-4 py-2 font-medium transition-colors ${
+          className={`rounded-b-none border-b-2 transition-all duration-200 ${
             activeTab === "operational"
-              ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              ? "border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20 font-semibold"
+              : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
           }`}
         >
           Operational ({filteredOperational.length} groups)
-        </button>
+        </Button>
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-12"></th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  {activeTab === "for-sale" ? "Model" : "Product Type"}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Total Quantity</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Variants</th>
-                {activeTab === "for-sale" && (
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Suppliers</th>
-                )}
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Last Updated</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-12"></th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                    {activeTab === "for-sale" ? "Model" : "Product Type"}
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Total Quantity</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Variants</th>
+                  {activeTab === "for-sale" && (
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Suppliers</th>
+                  )}
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Last Updated</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {displayGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={activeTab === "for-sale" ? 8 : 7} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                    {allGroups.length === 0 
-                      ? `No ${activeTab === "for-sale" ? "for sale" : "operational"} products found. Add your first product!` 
-                      : "No products match your search"}
+                  <td colSpan={activeTab === "for-sale" ? 8 : 7} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Package className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        {allGroups.length === 0 
+                          ? `No ${activeTab === "for-sale" ? "for sale" : "operational"} products found. Add your first product!` 
+                          : "No products match your search"}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -353,15 +369,17 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                     <Fragment key={group.groupName}>
                       {/* Group Row */}
                       <tr
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors cursor-pointer"
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer group bg-white dark:bg-gray-800"
                         onClick={() => toggleGroup(group.groupName)}
                       >
                         <td className="px-6 py-4">
-                          {isExpanded ? (
-                            <ChevronDown className="w-5 h-5 text-gray-400" />
-                          ) : (
-                            <ChevronRight className="w-5 h-5 text-gray-400" />
-                          )}
+                          <div className="transition-all duration-300 ease-in-out">
+                            {isExpanded ? (
+                              <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400 transition-all duration-300 rotate-0" />
+                            ) : (
+                              <ChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-400 transition-all duration-300 rotate-0 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-110" />
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
@@ -400,41 +418,57 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                         )}
                         <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{formatDate(group.lastUpdated)}</td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusBadge(group.status)}`}>
+                          <Badge variant="outline" className={getStatusBadge(group.status)}>
                             {group.status}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="px-6 py-4">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+                              >
                                 <Eye className="w-4 h-4" />
-                              </button>
+                              </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                if (group.items.length > 0) {
-                                  const firstItem = group.items[0];
-                                  const isPackage = packages.some((pkg) => pkg.id === firstItem.id);
-                                  const itemType = isPackage ? "package" : activeTab;
-                                  router.push(`/dashboard/equipment-details?id=${firstItem.id}&type=${itemType}`);
-                                }
-                              }}>
+                            <DropdownMenuContent 
+                              align="end"
+                              className="animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 animate-out fade-out-0 zoom-out-95 slide-out-to-top-2 duration-200"
+                            >
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (group.items.length > 0) {
+                                    const firstItem = group.items[0];
+                                    const isPackage = packages.some((pkg) => pkg.id === firstItem.id);
+                                    const itemType = isPackage ? "package" : activeTab;
+                                    router.push(`/dashboard/equipment-details?id=${firstItem.id}&type=${itemType}`);
+                                  }
+                                }}
+                                className="cursor-pointer transition-colors"
+                              >
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Details
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewCode("qr", group);
-                              }}>
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewCode("qr", group);
+                                }}
+                                className="cursor-pointer transition-colors"
+                              >
                                 <QrCode className="w-4 h-4 mr-2" />
                                 View QR Code
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewCode("barcode", group);
-                              }}>
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewCode("barcode", group);
+                                }}
+                                className="cursor-pointer transition-colors"
+                              >
                                 <Barcode className="w-4 h-4 mr-2" />
                                 View Barcode
                               </DropdownMenuItem>
@@ -447,7 +481,10 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                       {isExpanded && group.items.map((item: any, index: number) => (
                         <tr
                           key={`${group.groupName}-${item.id}-${index}`}
-                          className="bg-gray-50/50 dark:bg-gray-900/30 hover:bg-gray-100 dark:hover:bg-gray-900/50"
+                          className="bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                          style={{
+                            animation: `slideDown 0.3s ease-out ${index * 50}ms both`,
+                          }}
                         >
                           <td className="px-6 py-3"></td>
                           <td className="px-6 py-3 pl-12">
@@ -489,42 +526,61 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                             {formatDate(item.updated_at || item.created_at)}
                           </td>
                           <td className="px-6 py-3">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${
-                              activeTab === "for-sale"
-                                ? item.quantity > 0 ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-                                : item.condition === "inactive" ? "bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600" : "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                            }`}>
+                            <Badge 
+                              variant="outline"
+                              className={
+                                activeTab === "for-sale"
+                                  ? item.quantity > 0 ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                                  : item.condition === "inactive" ? "bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600" : "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                              }
+                            >
                               {activeTab === "for-sale" 
                                 ? item.quantity > 0 ? "In Stock" : "Out of Stock"
                                 : item.condition === "inactive" ? "Inactive" : "Active"}
-                            </span>
+                            </Badge>
                           </td>
                           <td className="px-6 py-3">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+                                >
                                   <Eye className="w-4 h-4" />
-                                </button>
+                                </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => {
-                                  const isPackage = packages.some((pkg) => pkg.id === item.id);
-                                  const itemType = isPackage ? "package" : activeTab;
-                                  router.push(`/dashboard/equipment-details?id=${item.id}&type=${itemType}`);
-                                }}>
+                              <DropdownMenuContent 
+                                align="end"
+                                className="animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
+                              >
+                                <DropdownMenuItem 
+                                  onClick={() => {
+                                    const isPackage = packages.some((pkg) => pkg.id === item.id);
+                                    const itemType = isPackage ? "package" : activeTab;
+                                    router.push(`/dashboard/equipment-details?id=${item.id}&type=${itemType}`);
+                                  }}
+                                  className="cursor-pointer transition-colors"
+                                >
                                   <Eye className="w-4 h-4 mr-2" />
                                   View Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleViewCode("qr", item)}>
+                                <DropdownMenuItem 
+                                  onClick={() => handleViewCode("qr", item)}
+                                  className="cursor-pointer transition-colors"
+                                >
                                   <QrCode className="w-4 h-4 mr-2" />
                                   View QR Code
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleViewCode("barcode", item)}>
+                                <DropdownMenuItem 
+                                  onClick={() => handleViewCode("barcode", item)}
+                                  className="cursor-pointer transition-colors"
+                                >
                                   <Barcode className="w-4 h-4 mr-2" />
                                   View Barcode
                                 </DropdownMenuItem>
                                 {activeTab === "for-sale" && item.supplier && (
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem className="cursor-default">
                                     <Building2 className="w-4 h-4 mr-2" />
                                     Supplier: {item.supplier}
                                   </DropdownMenuItem>
@@ -538,34 +594,39 @@ export default function ProductTable({ searchQuery, refreshTrigger = 0 }: Produc
                   );
                 })
               )}
-            </tbody>
-          </table>
-        </div>
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination for For Sale */}
       {activeTab === "for-sale" && totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredForSale.length)} of {filteredForSale.length} groups
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <Card className="border-2">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredForSale.length)} of {filteredForSale.length} groups
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* QR Code / Barcode Modal */}

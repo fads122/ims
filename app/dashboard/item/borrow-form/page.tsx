@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, X, Search, Package } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
+import Breadcrumbs from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -248,6 +249,8 @@ function BorrowFormContent() {
           <TopHeader />
           <div className="flex-1 overflow-auto">
             <div className="p-6 space-y-6">
+            {/* Breadcrumbs */}
+            <Breadcrumbs />
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

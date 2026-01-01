@@ -46,7 +46,7 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
         limit: limit.toString(),
         page: "1",
       });
-      
+
       if (activityTypeFilter && activityTypeFilter !== "all") {
         params.append("activity_type", activityTypeFilter);
       }
@@ -70,7 +70,7 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
         }
         throw new Error(errorData.error || "Failed to fetch activities");
       }
-      
+
       const result = await response.json();
       setActivities(result.data || []);
     } catch (error) {
@@ -88,7 +88,7 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
         import("jspdf-autotable"),
       ]);
 
-      const doc = new jsPDF();
+      const doc = new jsPDF() as InstanceType<typeof jsPDF> & { lastAutoTable?: { finalY?: number } };
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 15;
@@ -148,7 +148,7 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
       });
 
       // Footer
-      const finalY = (doc as any).lastAutoTable.finalY || y;
+      const finalY = doc.lastAutoTable?.finalY || y;
       if (finalY < pageHeight - 20) {
         doc.setFontSize(8);
         doc.text(
@@ -160,9 +160,10 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
       }
 
       doc.save(`Activity-Logs-${new Date().toISOString().split("T")[0]}.pdf`);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error exporting PDF:", error);
-      alert("Failed to export PDF: " + error.message);
+      const errorMessage = error instanceof Error ? error.message : "Failed to export PDF";
+      alert("Failed to export PDF: " + errorMessage);
     }
   };
 
@@ -345,42 +346,44 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
         ) : (
           <ScrollArea className="h-[500px] pr-4">
             <div className="space-y-4">
-              {activities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                >
-                  <div className="flex-shrink-0 mt-1">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 text-xs">
-                        {getUserInitials(activity.user_email)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          {getActivityIcon(activity.entity_type)}
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {activity.user_email.split("@")[0]}
-                          </span>
-                          <Badge className={`${getActivityColor(activity.activity_type)} text-xs`}>
-                            {activity.activity_type}
-                          </Badge>
+              {activities.map((activity) => {
+                return (
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div className="flex-shrink-0 mt-1">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 text-xs">
+                          {getUserInitials(activity.user_email)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getActivityIcon(activity.entity_type)}
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {activity.user_email.split("@")[0]}
+                            </span>
+                            <Badge className={`${getActivityColor(activity.activity_type)} text-xs`}>
+                              {activity.activity_type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {activity.description}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {activity.description}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
-                        <Clock className="w-3 h-3" />
-                        <span>{formatTimeAgo(activity.created_at)}</span>
+                        <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatTimeAgo(activity.created_at)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
         )}

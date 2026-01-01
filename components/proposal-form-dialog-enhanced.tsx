@@ -676,35 +676,35 @@ export default function ProposalFormDialog({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Available Materials</h3>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               <Input
                 placeholder="Search equipment..."
                 value={equipmentSearch}
                 onChange={(e) => setEquipmentSearch(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-sm sm:text-base"
               />
             </div>
-            <div className="grid grid-cols-3 gap-4 max-h-64 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-h-64 overflow-y-auto">
               {filteredEquipment
                 .filter((eq) => !selectedEquipmentIds.has(eq.id))
                 .map((equipment) => (
                   <div
                     key={equipment.id}
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-500 transition-colors cursor-pointer"
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:border-blue-500 transition-colors cursor-pointer"
                     onClick={() => handleSelectEquipment(equipment)}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-sm text-gray-900 dark:text-white">
+                    <div className="flex items-start justify-between mb-2 gap-2">
+                      <h4 className="font-medium text-xs sm:text-sm text-gray-900 dark:text-white break-words flex-1 min-w-0">
                         {equipment.name || equipment.product_model || "Unknown"}
                       </h4>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-[10px] sm:text-xs flex-shrink-0 whitespace-nowrap">
                         {equipment.type}
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-1 break-words">
                       {equipment.brand || equipment.product_brand} {equipment.model || equipment.product_model}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 break-words">
                       Stock: {equipment.quantity || 0} | SRP: ₱{equipment.srp?.toLocaleString() || "0"}
                     </p>
                   </div>

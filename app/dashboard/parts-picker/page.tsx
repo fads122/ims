@@ -18,6 +18,7 @@ import {
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
+import Breadcrumbs from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -346,41 +347,44 @@ function PartsPickerContent() {
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
             <div className="p-6 lg:p-8 space-y-6">
+              {/* Breadcrumbs */}
+              <Breadcrumbs />
               {/* Header */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                     Parts Picker
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
                     Search, select, and save equipment for your projects
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setIsViewSelectedOpen(true)}
                     disabled={selectedProducts.length === 0}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 text-xs sm:text-sm w-full sm:w-auto"
                   >
-                    <Eye className="w-4 h-4" />
-                    View Selected ({selectedProducts.length})
+                    <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">View Selected ({selectedProducts.length})</span>
+                    <span className="sm:hidden">Selected ({selectedProducts.length})</span>
                   </Button>
                 </div>
               </div>
 
               {/* Search and Filters */}
               <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col md:flex-row gap-4">
+                <CardContent className="pt-4 sm:pt-6">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       <Input
                         type="text"
                         placeholder="Search by name, model, brand, or supplier..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700"
+                        className="pl-9 sm:pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 text-sm sm:text-base"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -388,9 +392,10 @@ function PartsPickerContent() {
                         variant={searchMode === "text" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSearchMode("text")}
-                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs sm:text-sm flex-1 sm:flex-none"
                       >
-                        Text Search
+                        <span className="hidden sm:inline">Text Search</span>
+                        <span className="sm:hidden">Text</span>
                       </Button>
                       <Button
                         variant={searchMode === "semantic" ? "default" : "outline"}
@@ -399,24 +404,26 @@ function PartsPickerContent() {
                           setSearchMode("semantic");
                           alert("Semantic search coming soon!");
                         }}
-                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs sm:text-sm flex-1 sm:flex-none"
                       >
-                        AI Search
+                        <span className="hidden sm:inline">AI Search</span>
+                        <span className="sm:hidden">AI</span>
                       </Button>
                     </div>
                   </div>
 
                   {/* Category Filter */}
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                       <Button
                         variant={selectedCategory === "all" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSelectedCategory("all")}
-                        className={selectedCategory === "all" 
-                          ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
-                          : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }
+                        className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 ${
+                          selectedCategory === "all" 
+                            ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+                            : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}
                       >
                         All
                       </Button>
@@ -428,16 +435,17 @@ function PartsPickerContent() {
                             variant={selectedCategory === category ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSelectedCategory(category)}
-                            className={selectedCategory === category
-                              ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
-                              : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                            }
+                            className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 ${
+                              selectedCategory === category
+                                ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+                                : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            }`}
                           >
-                            {category}
+                            <span className="truncate max-w-[80px] sm:max-w-none">{category}</span>
                             {count > 0 && (
                               <Badge 
                                 variant="secondary" 
-                                className={`ml-1.5 text-xs px-1.5 py-0 ${
+                                className={`ml-1 sm:ml-1.5 text-[9px] sm:text-xs px-1 sm:px-1.5 py-0 ${
                                   selectedCategory === category
                                     ? "bg-white/20 dark:bg-gray-900/20 text-white dark:text-gray-900"
                                     : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -455,24 +463,24 @@ function PartsPickerContent() {
               </Card>
 
               {/* Results Count and Total Price Bar */}
-              <div className="flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-6 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 sm:px-6 py-3">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Showing <span className="font-medium text-gray-900 dark:text-white">{paginatedParts.length}</span> of{" "}
                     <span className="font-medium text-gray-900 dark:text-white">{filteredParts.length}</span> parts
                   </div>
                   {selectedCategory !== "all" && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-[10px] sm:text-xs">
                       {selectedCategory}
                     </Badge>
                   )}
                 </div>
                 {selectedProducts.length > 0 && (
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       <span className="font-medium text-gray-900 dark:text-white">{selectedProducts.length}</span> item{selectedProducts.length !== 1 ? "s" : ""} selected
                     </div>
-                    <div className="text-base font-semibold text-gray-900 dark:text-white">
+                    <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
                       Total: <span className="text-blue-600 dark:text-blue-400">₱{getTotalPrice().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
@@ -490,7 +498,7 @@ function PartsPickerContent() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                   {paginatedParts.map((part) => {
                     const isSelected = selectedProducts.some((p) => p.id === part.id);
                     const stockStatus = part.quantity === 0 ? "out" : part.quantity < 10 ? "low" : "in";
@@ -536,26 +544,26 @@ function PartsPickerContent() {
                           </div>
 
                           {/* Product Info Section */}
-                          <div className="p-4 space-y-3">
+                          <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
                             {/* Title and Brand */}
                             <div>
-                              <h3 className="font-medium text-sm text-gray-900 dark:text-white line-clamp-2 mb-1">
+                              <h3 className="font-medium text-xs sm:text-sm text-gray-900 dark:text-white line-clamp-2 mb-1">
                                 {part.name}
                               </h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
                                 {part.brand} {part.model && `• ${part.model}`}
                               </p>
                             </div>
 
                             {/* Price */}
                             <div>
-                              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                              <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
                                 ₱{part.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </span>
                             </div>
 
                             {/* Stock and Supplier */}
-                            <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center justify-between text-[10px] sm:text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
                               <div className="flex items-center gap-2">
                                 <span className="text-gray-500 dark:text-gray-400">Stock:</span>
                                 <Badge
@@ -563,7 +571,7 @@ function PartsPickerContent() {
                                     stockStatus === "out" ? "destructive" :
                                     stockStatus === "low" ? "secondary" : "default"
                                   }
-                                  className="text-xs"
+                                  className="text-[10px] sm:text-xs"
                                 >
                                   {part.quantity}
                                 </Badge>
@@ -670,23 +678,23 @@ function PartsPickerContent() {
                   key={product.id}
                   className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm sm:text-base text-gray-900 dark:text-white break-words">
                           {product.name}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 break-words">
                           {product.brand} {product.model}
                         </p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <div className="text-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                          <div className="text-xs sm:text-sm">
                             <span className="text-gray-500 dark:text-gray-400">Price: </span>
                             <span className="font-medium text-gray-900 dark:text-white">
                               ₱{product.price.toLocaleString()}
                             </span>
                           </div>
-                          <div className="text-sm">
+                          <div className="text-xs sm:text-sm">
                             <span className="text-gray-500 dark:text-gray-400">Total: </span>
                             <span className={`font-medium ${
                               product.selectedQuantity > (product.quantity || 0)
@@ -696,7 +704,7 @@ function PartsPickerContent() {
                               ₱{(product.price * product.selectedQuantity).toLocaleString()}
                             </span>
                           </div>
-                          <div className="text-sm">
+                          <div className="text-xs sm:text-sm">
                             <span className="text-gray-500 dark:text-gray-400">Stock: </span>
                             <Badge
                               variant={
@@ -704,26 +712,26 @@ function PartsPickerContent() {
                                 product.selectedQuantity > product.quantity ? "destructive" :
                                 product.quantity < 10 ? "secondary" : "default"
                               }
-                              className="text-xs"
+                              className="text-[10px] sm:text-xs"
                             >
                               {product.quantity}
                             </Badge>
                           </div>
                         </div>
                         {product.selectedQuantity > (product.quantity || 0) && (
-                          <div className="mt-2 text-xs text-red-600 dark:text-red-400 font-medium">
+                          <div className="mt-2 text-[10px] sm:text-xs text-red-600 dark:text-red-400 font-medium">
                             ⚠️ Quantity exceeds available stock
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => updateQuantity(product.id, -1)}
-                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 h-8 w-8 sm:h-9 sm:w-9 p-0"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                         <div className="flex flex-col items-center gap-1">
                           <Input
@@ -735,14 +743,14 @@ function PartsPickerContent() {
                               const newQuantity = parseInt(e.target.value) || 1;
                               handleQuantityChange(product.id, newQuantity);
                             }}
-                            className={`w-16 h-9 text-center text-sm font-medium ${
+                            className={`w-14 sm:w-16 h-8 sm:h-9 text-center text-xs sm:text-sm font-medium ${
                               product.selectedQuantity > (product.quantity || 0)
                                 ? "border-red-500 bg-red-50 dark:bg-red-900/20 dark:border-red-500"
                                 : "border-gray-200 dark:border-gray-700"
                             }`}
                           />
                           {product.quantity !== undefined && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
                               Max: {product.quantity}
                             </span>
                           )}
@@ -752,17 +760,17 @@ function PartsPickerContent() {
                           size="sm"
                           onClick={() => updateQuantity(product.id, 1)}
                           disabled={product.selectedQuantity >= (product.quantity || 0)}
-                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 sm:h-9 sm:w-9 p-0"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => removeProduct(product.id)}
-                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 h-8 w-8 sm:h-9 sm:w-9 p-0"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </div>
                     </div>
@@ -773,29 +781,31 @@ function PartsPickerContent() {
           </ScrollArea>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+              <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Grand Total:
               </span>
-              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <span className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                 ₱{getTotalPrice().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Button
                 variant="outline"
                 onClick={handleExportPDF}
-                className="flex items-center gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 text-sm sm:text-base w-full sm:w-auto"
               >
-                <Download className="w-4 h-4" />
-                Export PDF
+                <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Export PDF</span>
+                <span className="sm:hidden">Export</span>
               </Button>
               <Button
                 onClick={() => setIsSaveModalOpen(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-sm sm:text-base w-full sm:w-auto"
               >
-                <Save className="w-4 h-4" />
-                Save Equipment List
+                <Save className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Save Equipment List</span>
+                <span className="sm:hidden">Save List</span>
               </Button>
             </div>
           </div>

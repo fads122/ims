@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp } from "lucide-react";
 
@@ -17,7 +17,7 @@ interface EquipmentOption {
 
 export default function CostHistoryDashboard() {
   const [equipment, setEquipment] = useState<EquipmentOption[]>([]);
-  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("summary");
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentOption | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,16 +29,16 @@ export default function CostHistoryDashboard() {
     const checkDarkMode = () => {
       setIsDarkMode(document.documentElement.classList.contains("dark"));
     };
-    
+
     checkDarkMode();
-    
+
     // Watch for theme changes
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
-    
+
     return () => observer.disconnect();
   }, []);
 
@@ -80,12 +80,6 @@ export default function CostHistoryDashboard() {
         }
 
         setEquipment(equipmentList);
-
-        // Auto-select first equipment if available
-        if (equipmentList.length > 0) {
-          setSelectedEquipmentId(equipmentList[0].id);
-          setSelectedEquipment(equipmentList[0]);
-        }
       } catch (error) {
         console.error("Error fetching equipment:", error);
       } finally {
@@ -96,19 +90,27 @@ export default function CostHistoryDashboard() {
     fetchEquipment();
   }, []);
 
-  // Fetch pricing history when equipment is selected
+  // Fetch pricing history - aggregate when "summary" is selected, or specific equipment when selected
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!selectedEquipment) {
-        setHistory([]);
-        return;
-      }
-
       try {
         setChartLoading(true);
-        const response = await fetch(
-          `/api/pricing-history?productId=${selectedEquipment.id}&productType=${selectedEquipment.type}`
-        );
+        let response;
+        
+        if (selectedEquipmentId === "summary") {
+          // Fetch aggregate data
+          response = await fetch("/api/pricing-history?aggregate=true");
+        } else {
+          // Fetch specific equipment data
+          if (!selectedEquipment) {
+            setHistory([]);
+            return;
+          }
+          response = await fetch(
+            `/api/pricing-history?productId=${selectedEquipment.id}&productType=${selectedEquipment.type}`
+          );
+        }
+
         if (!response.ok) throw new Error("Failed to fetch pricing history");
 
         const result = await response.json();
@@ -122,13 +124,17 @@ export default function CostHistoryDashboard() {
     };
 
     fetchHistory();
-  }, [selectedEquipment]);
+  }, [selectedEquipment, selectedEquipmentId]);
 
   // Handle equipment selection
   const handleEquipmentChange = (equipmentId: string) => {
     setSelectedEquipmentId(equipmentId);
-    const eq = equipment.find((e) => e.id === equipmentId);
-    setSelectedEquipment(eq || null);
+    if (equipmentId === "summary") {
+      setSelectedEquipment(null);
+    } else {
+      const eq = equipment.find((e) => e.id === equipmentId);
+      setSelectedEquipment(eq || null);
+    }
   };
 
   // Calculate price changes and trends
@@ -148,7 +154,7 @@ export default function CostHistoryDashboard() {
     const lastEntry = history[history.length - 1];
 
     if (selectedEquipment.type === "for-sale") {
-      const supplierCostChange = selectedEquipment.supplierCost 
+      const supplierCostChange = selectedEquipment.supplierCost
         ? (selectedEquipment.supplierCost - (firstEntry.supplier_cost || 0))
         : null;
       const supplierCostPercent = firstEntry.supplier_cost && selectedEquipment.supplierCost
@@ -198,39 +204,29 @@ export default function CostHistoryDashboard() {
 
   // Format data for chart
   const chartData = useMemo(() => {
-    if (!selectedEquipment) return [];
+    if (history.length === 0) return [];
 
-    let data: any[] = [];
+    // Format all history data points chronologically
+    const data = history.map((item) => {
+      const date = new Date(item.created_at || item.date);
+      const formattedDate = date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+      });
 
-    if (history.length === 0) {
-      // If no history, show current prices as initial point
-      const now = new Date();
-      if (selectedEquipment.type === "for-sale") {
-        data = [{
-          date: now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          "Supplier Cost": selectedEquipment.supplierCost || null,
-          "SRP": selectedEquipment.srp || null,
-          fullDate: now.toISOString(),
-        }];
+      if (selectedEquipmentId === "summary") {
+        // Aggregate mode: show both supplier cost and cost (from packages) as "Total Cost"
+        const totalCost = (item.supplier_cost || 0) + (item.cost || 0);
+        return {
+          date: formattedDate,
+          "Total Cost": totalCost > 0 ? totalCost : null,
+          "SRP": item.srp ? Number(item.srp) : null,
+          fullDate: item.created_at || item.date,
+        };
       } else {
-        data = [{
-          date: now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          "Cost": selectedEquipment.cost || null,
-          "SRP": selectedEquipment.srp || null,
-          fullDate: now.toISOString(),
-        }];
-      }
-    } else {
-      // Format all history data points chronologically
-      data = history.map((item) => {
-        const date = new Date(item.created_at);
-        const formattedDate = date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
-        });
-
-        if (selectedEquipment.type === "for-sale") {
+        // Equipment-specific mode
+        if (selectedEquipment?.type === "for-sale") {
           return {
             date: formattedDate,
             "Supplier Cost": item.supplier_cost ? Number(item.supplier_cost) : null,
@@ -245,86 +241,86 @@ export default function CostHistoryDashboard() {
             fullDate: item.created_at,
           };
         }
-      });
-
-      // Always add current prices as the latest point
-      const lastEntry = history[history.length - 1];
-      const currentDate = new Date();
-      const currentFormattedDate = currentDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: currentDate.getFullYear() !== new Date(lastEntry.created_at).getFullYear() ? "numeric" : undefined,
-      });
-
-      // Check if current prices differ from last entry
-      const pricesChanged = selectedEquipment.type === "for-sale"
-        ? (Number(lastEntry.supplier_cost) !== Number(selectedEquipment.supplierCost) || Number(lastEntry.srp) !== Number(selectedEquipment.srp))
-        : (Number(lastEntry.cost) !== Number(selectedEquipment.cost) || Number(lastEntry.srp) !== Number(selectedEquipment.srp));
-
-      // Add current prices as latest point if they changed, or if it's been more than a day
-      const lastEntryDate = new Date(lastEntry.created_at);
-      const daysSinceLastEntry = (currentDate.getTime() - lastEntryDate.getTime()) / (1000 * 60 * 60 * 24);
-
-      if (pricesChanged || daysSinceLastEntry > 1) {
-        if (selectedEquipment.type === "for-sale") {
-          data.push({
-            date: currentFormattedDate,
-            "Supplier Cost": selectedEquipment.supplierCost || null,
-            "SRP": selectedEquipment.srp || null,
-            fullDate: currentDate.toISOString(),
-          });
-        } else {
-          data.push({
-            date: currentFormattedDate,
-            "Cost": selectedEquipment.cost || null,
-            "SRP": selectedEquipment.srp || null,
-            fullDate: currentDate.toISOString(),
-          });
-        }
       }
-    }
+    });
 
     // Ensure data is sorted by date (chronological order, left to right)
     data.sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
 
     return data;
-  }, [history, selectedEquipment]);
+  }, [history, selectedEquipment, selectedEquipmentId]);
 
   const maxValue = useMemo(() => {
     if (chartData.length === 0) return 1000;
     return Math.max(
       ...chartData.flatMap(d => [
-        selectedEquipment?.type === "for-sale" ? d["Supplier Cost"] || 0 : d["Cost"] || 0,
+        selectedEquipmentId === "summary" ? d["Total Cost"] || 0 : (selectedEquipment?.type === "for-sale" ? d["Supplier Cost"] || 0 : d["Cost"] || 0),
         d["SRP"] || 0
       ])
     );
-  }, [chartData, selectedEquipment]);
+  }, [chartData, selectedEquipment, selectedEquipmentId]);
 
-  const hasSupplierCost = selectedEquipment?.type === "for-sale" && chartData.some((d: any) => d["Supplier Cost"] !== null);
-  const hasCost = selectedEquipment?.type === "package" && chartData.some((d: any) => d["Cost"] !== null);
+  const hasSupplierCost = selectedEquipmentId !== "summary" && selectedEquipment?.type === "for-sale" && chartData.some((d: any) => d["Supplier Cost"] !== null);
+  const hasCost = selectedEquipmentId !== "summary" && selectedEquipment?.type === "package" && chartData.some((d: any) => d["Cost"] !== null);
+  const hasTotalCost = selectedEquipmentId === "summary" && chartData.some((d: any) => d["Total Cost"] !== null);
   const hasSRP = chartData.some((d: any) => d["SRP"] !== null);
 
   // Chart configuration with dark mode support
   const chartConfig: ChartConfig = {
+    ...(hasTotalCost && {
+      "Total Cost": {
+        label: "Total Cost",
+        color: isDarkMode ? "#60a5fa" : "#386FA4",
+      },
+    }),
     ...(hasSupplierCost && {
       "Supplier Cost": {
         label: "Supplier Cost",
-        color: isDarkMode ? "#60a5fa" : "#386FA4", // Lighter blue in dark mode
+        color: isDarkMode ? "#60a5fa" : "#386FA4",
       },
     }),
     ...(hasCost && {
       "Cost": {
         label: "Cost",
-        color: isDarkMode ? "#34d399" : "#10b981", // Lighter green in dark mode
+        color: isDarkMode ? "#34d399" : "#10b981",
       },
     }),
     ...(hasSRP && {
       "SRP": {
         label: "SRP",
-        color: isDarkMode ? "#fbbf24" : "#FCCA46", // Brighter yellow in dark mode
+        color: isDarkMode ? "#fbbf24" : "#FCCA46",
       },
     }),
   };
+
+  // Calculate aggregate stats for summary mode
+  const aggregateStats = useMemo(() => {
+    if (selectedEquipmentId !== "summary" || history.length === 0) {
+      return { totalCost: 0, totalSRP: 0, costChange: null, srpChange: null, costPercent: null, srpPercent: null };
+    }
+
+    const firstEntry = history[0];
+    const lastEntry = history[history.length - 1];
+    
+    const firstTotalCost = (firstEntry.supplier_cost || 0) + (firstEntry.cost || 0);
+    const lastTotalCost = (lastEntry.supplier_cost || 0) + (lastEntry.cost || 0);
+    const firstSRP = lastEntry.srp || 0;
+    const lastSRP = lastEntry.srp || 0;
+
+    const costChange = lastTotalCost - firstTotalCost;
+    const costPercent = firstTotalCost > 0 ? (costChange / firstTotalCost) * 100 : null;
+    const srpChange = lastSRP - firstSRP;
+    const srpPercent = firstSRP > 0 ? (srpChange / firstSRP) * 100 : null;
+
+      return {
+      totalCost: lastTotalCost,
+      totalSRP: lastSRP,
+      costChange,
+      srpChange,
+      costPercent,
+      srpPercent,
+    };
+  }, [history, selectedEquipmentId]);
 
   if (loading) {
     return (
@@ -336,7 +332,7 @@ export default function CostHistoryDashboard() {
 
   const getTrendClassName = (change: number | null) => {
     if (change === null) return "";
-    return change >= 0 
+    return change >= 0
       ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
       : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
   };
@@ -352,15 +348,18 @@ export default function CostHistoryDashboard() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Cost History</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Track pricing changes over time</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                {selectedEquipmentId === "summary" ? "Overall pricing trends" : "Track pricing changes over time"}
+              </p>
             </div>
           </div>
           <div className="w-full sm:w-72">
             <Select value={selectedEquipmentId} onValueChange={handleEquipmentChange}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select equipment" />
+                <SelectValue placeholder="Select view" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="summary">Summary</SelectItem>
                 {equipment.length === 0 ? (
                   <div className="px-2 py-1.5 text-sm text-muted-foreground">No equipment available</div>
                 ) : (
@@ -378,18 +377,47 @@ export default function CostHistoryDashboard() {
 
       {/* Content */}
       <div className="p-6">
-        {!selectedEquipment ? (
-          <div className="flex items-center justify-center h-96 text-gray-500 dark:text-gray-400">
-            Please select an equipment to view cost history
-          </div>
-        ) : chartLoading ? (
+        {chartLoading ? (
           <div className="flex items-center justify-center h-96 text-gray-500 dark:text-gray-400">
             Loading pricing history...
+          </div>
+        ) : selectedEquipmentId !== "summary" && !selectedEquipment ? (
+          <div className="flex items-center justify-center h-96 text-gray-500 dark:text-gray-400">
+            Please select an equipment to view cost history
           </div>
         ) : (
           <div className="space-y-6">
             {/* Stats Cards */}
-            {selectedEquipment && (
+            {selectedEquipmentId === "summary" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-5 border border-gray-200 dark:border-gray-600">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Total Cost</p>
+                    {aggregateStats.costChange !== null && (
+                      <span className={`text-xs font-medium px-2 py-1 rounded ${getTrendClassName(aggregateStats.costChange)}`}>
+                        {aggregateStats.costChange >= 0 ? "+" : ""}{aggregateStats.costPercent !== null && `${aggregateStats.costPercent.toFixed(1)}%`}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: "#386FA4" }}>
+                    ${aggregateStats.totalCost.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-5 border border-gray-200 dark:border-gray-600">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Total SRP</p>
+                    {aggregateStats.srpChange !== null && (
+                      <span className={`text-xs font-medium px-2 py-1 rounded ${getTrendClassName(aggregateStats.srpChange)}`}>
+                        {aggregateStats.srpChange >= 0 ? "+" : ""}{aggregateStats.srpPercent !== null && `${aggregateStats.srpPercent.toFixed(1)}%`}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: "#FCCA46" }}>
+                    ${aggregateStats.totalSRP.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            ) : selectedEquipment && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedEquipment.type === "for-sale" ? (
                   <>
@@ -457,104 +485,106 @@ export default function CostHistoryDashboard() {
             <div className="pt-4">
               <div className="w-full" style={{ height: '500px', minHeight: '500px' }}>
                 <ChartContainer config={chartConfig} className="h-full w-full" style={{ height: '100%', width: '100%' }}>
-                  <LineChart 
-                    data={chartData} 
+                  <AreaChart
+                    data={chartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
                   >
-                    <CartesianGrid 
-                      strokeDasharray="3 3" 
+                    <defs>
+                      <linearGradient id="colorSupplierCost" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={isDarkMode ? "#60a5fa" : "#386FA4"} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={isDarkMode ? "#60a5fa" : "#386FA4"} stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={isDarkMode ? "#34d399" : "#10b981"} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={isDarkMode ? "#34d399" : "#10b981"} stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="colorSRP" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={isDarkMode ? "#fbbf24" : "#FCCA46"} stopOpacity={0.9}/>
+                        <stop offset="95%" stopColor={isDarkMode ? "#fbbf24" : "#FCCA46"} stopOpacity={0.2}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
                       stroke={isDarkMode ? "#374151" : "#e5e7eb"}
+                      horizontal={true}
+                      vertical={false}
                     />
-                    <XAxis 
-                      dataKey="date" 
+                    <XAxis
+                      dataKey="date"
                       tickLine={false}
                       axisLine={false}
                       tickMargin={8}
                       angle={-45}
                       textAnchor="end"
                       height={80}
-                      tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280" }}
+                      tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
                     />
-                    <YAxis 
+                    <YAxis
                       tickLine={false}
                       axisLine={false}
                       tickMargin={8}
                       tickFormatter={(value) => `$${value.toLocaleString()}`}
                       domain={[0, maxValue * 1.1 || 1000]}
-                      tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280" }}
+                      tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }}
                     />
                     <ChartTooltip
                       cursor={true}
-                      content={<ChartTooltipContent 
-                        formatter={(value: any, name: string, item: any) => {
-                          const formattedValue = value !== null && value !== undefined 
-                            ? `$${Number(value).toLocaleString()}` 
+                      content={<ChartTooltipContent
+                        formatter={(value: unknown) => {
+                          const formattedValue = value !== null && value !== undefined
+                            ? `$${Number(value).toLocaleString()}`
                             : "N/A";
-                          const label = chartConfig[name as keyof typeof chartConfig]?.label || name;
-                          const getColor = (name: string) => {
-                            if (name === "Supplier Cost") return isDarkMode ? "#60a5fa" : "#386FA4";
-                            if (name === "SRP") return isDarkMode ? "#fbbf24" : "#FCCA46";
-                            if (name === "Cost") return isDarkMode ? "#34d399" : "#10b981";
-                            return item.color || item.payload?.fill || "#386FA4";
-                          };
-                          const color = getColor(name);
-                          
-                          return (
-                            <div className="flex w-full items-center gap-2">
-                              <div
-                                className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
-                                style={{
-                                  backgroundColor: color,
-                                }}
-                              />
-                              <div className="flex flex-1 justify-between items-center">
-                                <span className="text-muted-foreground">
-                                  {label}
-                                </span>
-                                <span className="font-mono font-medium tabular-nums">
-                                  {formattedValue}
-                                </span>
-                              </div>
-                            </div>
-                          );
+                          return formattedValue;
                         }}
+                        labelFormatter={(label) => label}
                       />}
                     />
                     <ChartLegend content={<ChartLegendContent />} />
+                    {hasTotalCost && (
+                      <Area
+                        type="monotone"
+                        dataKey="Total Cost"
+                        stackId="1"
+                        stroke={isDarkMode ? "#60a5fa" : "#386FA4"}
+                        strokeWidth={1.5}
+                        fill="url(#colorSupplierCost)"
+                        fillOpacity={1}
+                      />
+                    )}
                     {hasSupplierCost && (
-                      <Line
+                      <Area
                         type="monotone"
                         dataKey="Supplier Cost"
+                        stackId="1"
                         stroke={isDarkMode ? "#60a5fa" : "#386FA4"}
-                        strokeWidth={2}
-                        dot={{ r: 5, fill: isDarkMode ? "#60a5fa" : "#386FA4" }}
-                        activeDot={{ r: 7, fill: isDarkMode ? "#60a5fa" : "#386FA4" }}
-                        connectNulls={false}
+                        strokeWidth={1.5}
+                        fill="url(#colorSupplierCost)"
+                        fillOpacity={1}
                       />
                     )}
                     {hasCost && (
-                      <Line
+                      <Area
                         type="monotone"
                         dataKey="Cost"
+                        stackId="1"
                         stroke={isDarkMode ? "#34d399" : "#10b981"}
-                        strokeWidth={2}
-                        dot={{ r: 5, fill: isDarkMode ? "#34d399" : "#10b981" }}
-                        activeDot={{ r: 7, fill: isDarkMode ? "#34d399" : "#10b981" }}
-                        connectNulls={false}
+                        strokeWidth={1.5}
+                        fill="url(#colorCost)"
+                        fillOpacity={1}
                       />
                     )}
                     {hasSRP && (
-                      <Line
+                      <Area
                         type="monotone"
                         dataKey="SRP"
+                        stackId="1"
                         stroke={isDarkMode ? "#fbbf24" : "#FCCA46"}
-                        strokeWidth={2}
-                        dot={{ r: 5, fill: isDarkMode ? "#fbbf24" : "#FCCA46" }}
-                        activeDot={{ r: 7, fill: isDarkMode ? "#fbbf24" : "#FCCA46" }}
-                        connectNulls={false}
+                        strokeWidth={1.5}
+                        fill="url(#colorSRP)"
+                        fillOpacity={1}
                       />
                     )}
-                  </LineChart>
+                  </AreaChart>
                 </ChartContainer>
               </div>
             </div>

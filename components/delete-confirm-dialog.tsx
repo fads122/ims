@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-interface DeleteConfirmDialogProps {
+interface DeleteConfirmDialogProps { 
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import TopHeader from "@/components/top-header";
+import Breadcrumbs from "@/components/breadcrumbs";
 import MetricsGrid from "@/components/metrics-grid";
 import CostHistoryDashboard from "@/components/cost-history-dashboard";
 import RecentActivities from "@/components/recent-activities";
@@ -54,12 +55,14 @@ export default function Dashboard() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-gray-50 dark:bg-gray-900 transition-colors relative">
+      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
-          <div className="flex-1 overflow-auto bg-gray-50/50 dark:bg-gray-950">
+          <div className="flex-1 overflow-auto bg-transparent">
             <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+              {/* Breadcrumbs */}
+              <Breadcrumbs />
               {/* Header Section */}
               <div className="mb-6">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">

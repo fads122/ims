@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Home, List, Truck, FileText, Users, ShoppingCart, Box, Tag, LogOut, ChevronsUpDown } from "lucide-react";
+import { Home, List, Truck, FileText, Users, ShoppingCart, Box, Tag, LogOut, ChevronsUpDown, FileUp } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Sidebar,
@@ -35,6 +35,7 @@ const menuItems = [
   { id: "sales-order", label: "Sales Order", icon: ShoppingCart, href: "/dashboard/sales-order" },
   { id: "parts-picker", label: "Parts Picker", icon: Box, href: "/dashboard/parts-picker" },
   { id: "item", label: "Item", icon: Tag, href: "/dashboard/item" },
+  { id: "cost-update", label: "Cost Update", icon: FileUp, href: "/dashboard/cost-update" },
 ];
 
 export function AppSidebar() {

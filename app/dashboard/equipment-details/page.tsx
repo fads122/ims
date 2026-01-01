@@ -6,6 +6,7 @@ import { ArrowLeft, QrCode, Barcode, Package, DollarSign, MapPin, Calendar, Box,
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import TopHeader from "@/components/top-header";
+import Breadcrumbs from "@/components/breadcrumbs";
 import QRBarcodeModal from "@/components/qr-barcode-modal";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -16,20 +17,81 @@ interface User {
   createdAt: string;
 }
 
-const InfoCard = memo(({ 
-  title, 
-  icon: Icon, 
-  section, 
-  isEditing, 
-  isSaving, 
-  onEdit, 
-  onCancel, 
-  onSave, 
-  children 
-}: { 
-  title: string; 
-  icon: any; 
-  section: string; 
+interface PricingHistoryItem {
+  created_at: string;
+  supplier_cost?: number | null;
+  cost?: number | null;
+  srp?: number | null;
+}
+
+interface ChartDataPoint {
+  date: string;
+  "Supplier Cost"?: number | null;
+  "Cost"?: number | null;
+  "SRP"?: number | null;
+  fullDate: string;
+}
+
+interface EquipmentItem {
+  id: string;
+  name?: string;
+  product_type?: string;
+  brand?: string;
+  model?: string;
+  serial_number?: string;
+  quantity?: number;
+  box_quantity?: number;
+  condition?: string;
+  damage_status?: string;
+  date_acquired?: string | null;
+  images?: string[];
+  qr_code?: string;
+  barcode?: string;
+  product_brand?: string;
+  product_model?: string;
+  category?: string;
+  supplier?: string;
+  supplier_cost?: number;
+  srp?: number;
+  location?: string;
+  description?: string;
+  brochure_url?: string;
+  package_name?: string;
+  package_category?: string;
+  ownership_type?: string;
+  cost?: number;
+  package_description?: string;
+  package_contents?: PackageContentItem[];
+}
+
+interface PackageContentItem {
+  item_category: string;
+  item_brand: string;
+  item_model: string;
+  item_quantity: number;
+  item_condition: string;
+}
+
+interface UpdatePayload {
+  type: string;
+  id: string;
+  data: Record<string, unknown>;
+}
+
+const InfoCard = memo(({
+  title,
+  icon: Icon,
+  section,
+  isEditing,
+  isSaving,
+  onEdit,
+  onCancel,
+  onSave,
+  children
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  section: string;
   isEditing: boolean;
   isSaving: boolean;
   onEdit: () => void;
@@ -82,22 +144,22 @@ const InfoCard = memo(({
 
 InfoCard.displayName = "InfoCard";
 
-const InfoItem = memo(({ 
-  label, 
-  field, 
-  value, 
-  type = "text", 
-  section, 
-  isEditing, 
-  onUpdate 
-}: { 
-  label: string; 
-  field?: string; 
-  value: string | number | null | undefined; 
-  type?: string; 
+const InfoItem = memo(({
+  label,
+  field,
+  value,
+  type = "text",
+  section,
+  isEditing,
+  onUpdate
+}: {
+  label: string;
+  field?: string;
+  value: string | number | null | undefined;
+  type?: string;
   section: string;
   isEditing: boolean;
-  onUpdate: (field: string, value: any) => void;
+  onUpdate: (field: string, value: string | number | null) => void;
 }) => {
   if (isEditing && field) {
     return (
@@ -146,7 +208,7 @@ const InfoItem = memo(({
 InfoItem.displayName = "InfoItem";
 
 const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { productId?: string; supplierCost?: number; cost?: number; srp?: number; productType: string }) => {
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<PricingHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -175,8 +237,8 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
   }, [productId, productType]);
 
   // Format data for chart - show all historical prices chronologically
-  let chartData: any[] = [];
-  
+  let chartData: ChartDataPoint[] = [];
+
   if (history.length === 0) {
     // If no history, show current prices as initial point
     const now = new Date();
@@ -230,7 +292,7 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
       day: "numeric",
       year: currentDate.getFullYear() !== new Date(lastEntry.created_at).getFullYear() ? "numeric" : undefined,
     });
-    
+
     // Check if current prices differ from last entry
     const pricesChanged = productType === "for-sale"
       ? (Number(lastEntry.supplier_cost) !== Number(supplierCost) || Number(lastEntry.srp) !== Number(srp))
@@ -239,7 +301,7 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
     // Add current prices as latest point if they changed, or if it's been more than a day
     const lastEntryDate = new Date(lastEntry.created_at);
     const daysSinceLastEntry = (currentDate.getTime() - lastEntryDate.getTime()) / (1000 * 60 * 60 * 24);
-    
+
     if (pricesChanged || daysSinceLastEntry > 1) {
       if (productType === "for-sale") {
         chartData.push({
@@ -269,9 +331,9 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
     ])
   );
 
-  const hasSupplierCost = productType === "for-sale" && chartData.some((d: any) => d["Supplier Cost"] !== null);
-  const hasCost = productType === "package" && chartData.some((d: any) => d["Cost"] !== null);
-  const hasSRP = chartData.some((d: any) => d["SRP"] !== null);
+  const hasSupplierCost = productType === "for-sale" && chartData.some((d) => d["Supplier Cost"] !== null);
+  const hasCost = productType === "package" && chartData.some((d) => d["Cost"] !== null);
+  const hasSRP = chartData.some((d) => d["SRP"] !== null);
 
   if (loading) {
     return (
@@ -307,13 +369,13 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
     <div className="space-y-4">
       <div className="h-64">
         <ChartContainer config={chartConfig} className="h-full">
-          <LineChart 
-            data={chartData} 
+          <LineChart
+            data={chartData}
             margin={{ top: 5, right: 20, left: 0, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -321,7 +383,7 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
               textAnchor="end"
               height={60}
             />
-            <YAxis 
+            <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -330,34 +392,7 @@ const PricingChart = ({ productId, supplierCost, cost, srp, productType }: { pro
             />
             <ChartTooltip
               cursor={true}
-              content={<ChartTooltipContent 
-                formatter={(value: any, name: string, item: any) => {
-                  const formattedValue = value !== null && value !== undefined 
-                    ? `$${Number(value).toLocaleString()}` 
-                    : "N/A";
-                  const label = chartConfig[name as keyof typeof chartConfig]?.label || name;
-                  const color = item.color || item.payload?.fill || (name === "Supplier Cost" ? "#3b82f6" : name === "SRP" ? "#f59e0b" : "#10b981");
-                  
-                  return (
-                    <div className="flex w-full items-center gap-2">
-                      <div
-                        className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
-                        style={{
-                          backgroundColor: color,
-                        }}
-                      />
-                      <div className="flex flex-1 justify-between items-center">
-                        <span className="text-muted-foreground">
-                          {label}
-                        </span>
-                        <span className="font-mono font-medium tabular-nums">
-                          {formattedValue}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                }}
-              />}
+              content={<ChartTooltipContent />}
             />
             <ChartLegend content={<ChartLegendContent />} />
             {hasSupplierCost && (
@@ -435,8 +470,8 @@ function EquipmentDetailsContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [editingSection, setEditingSection] = useState<string | null>(null);
-  const [equipment, setEquipment] = useState<any>(null);
-  const [editData, setEditData] = useState<any>(null);
+  const [equipment, setEquipment] = useState<EquipmentItem | null>(null);
+  const [editData, setEditData] = useState<EquipmentItem | null>(null);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"qr" | "barcode">("qr");
@@ -513,18 +548,18 @@ function EquipmentDetailsContent() {
       if (!response.ok) throw new Error("Failed to fetch equipment");
 
       const result = await response.json();
-      let items: any[] = [];
-      
+      let items: EquipmentItem[] = [];
+
       if (type === "operational") {
-        items = result.data?.operational || [];
+        items = (result.data?.operational || []) as EquipmentItem[];
       } else if (type === "for-sale") {
-        items = result.data?.forSale || [];
+        items = (result.data?.forSale || []) as EquipmentItem[];
       } else if (type === "package") {
-        items = result.data?.packages || [];
+        items = (result.data?.packages || []) as EquipmentItem[];
       }
-      
-      const found = items.find((item: any) => item.id === id);
-      
+
+      const found = items.find((item) => item.id === id);
+
       if (found) {
         setEquipment(found);
         setEditData({ ...found });
@@ -547,20 +582,26 @@ function EquipmentDetailsContent() {
 
   const handleCancel = () => {
     setEditingSection(null);
-    setEditData({ ...equipment });
+    if (equipment) {
+      setEditData({ ...equipment });
+    }
   };
 
   const handleSave = async (section: string) => {
     try {
       setSaving(section);
-      
+
+      if (!editData || !equipment || !id) {
+        throw new Error("Missing required data");
+      }
+
       // Prepare data based on type
-      let updatePayload: any = {};
-      
+      let updatePayload: UpdatePayload;
+
       if (type === "operational") {
         updatePayload = {
           type: "operational",
-          id: id,
+          id: id || "",
           data: {
             name: editData.name,
             productType: editData.product_type,
@@ -581,7 +622,7 @@ function EquipmentDetailsContent() {
       } else if (type === "for-sale") {
         updatePayload = {
           type: "for-sale",
-          id: id,
+          id: id || "",
           data: {
             category: editData.category,
             productModel: editData.product_model,
@@ -604,7 +645,7 @@ function EquipmentDetailsContent() {
       } else if (type === "package") {
         updatePayload = {
           type: "package",
-          id: id,
+          id: id || "",
           data: {
             packageName: editData.package_name,
             packageCategory: editData.package_category,
@@ -623,6 +664,8 @@ function EquipmentDetailsContent() {
             regenerateCodes: editData.package_name !== equipment.package_name,
           },
         };
+      } else {
+        throw new Error("Invalid equipment type");
       }
 
       const response = await fetch("/api/products", {
@@ -643,9 +686,10 @@ function EquipmentDetailsContent() {
       setEditData(result.data);
       setEditingSection(null);
       alert("Equipment updated successfully!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating equipment:", error);
-      alert(error.message || "Failed to update equipment. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Failed to update equipment. Please try again.";
+      alert(errorMessage);
     } finally {
       setSaving(null);
     }
@@ -653,10 +697,10 @@ function EquipmentDetailsContent() {
 
   const handleViewCode = (codeType: "qr" | "barcode") => {
     if (!equipment) return;
-    
+
     const code = codeType === "qr" ? equipment.qr_code : equipment.barcode;
     const data = equipment.serial_number || equipment.id || equipment.package_name || "";
-    
+
     setStoredCode(code || "");
     setModalData(data);
     setModalType(codeType);
@@ -667,11 +711,14 @@ function EquipmentDetailsContent() {
     }
   };
 
-  const updateField = useCallback((field: string, value: any) => {
-    setEditData((prev: any) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const updateField = useCallback((field: string, value: string | number | null) => {
+    setEditData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   }, []);
 
   if (loading) {
@@ -694,6 +741,8 @@ function EquipmentDetailsContent() {
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
             <div className="p-6 lg:p-8 max-w-6xl mx-auto">
+              {/* Breadcrumbs */}
+              <Breadcrumbs />
               {/* Header */}
               <div className="mb-6">
                 <button
@@ -714,9 +763,9 @@ function EquipmentDetailsContent() {
               {/* Cards Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Basic Information Card */}
-                <InfoCard 
-                  title="Basic Information" 
-                  icon={Box} 
+                <InfoCard
+                  title="Basic Information"
+                  icon={Box}
                   section="basic"
                   isEditing={editingSection === "basic"}
                   isSaving={saving === "basic"}
@@ -750,9 +799,9 @@ function EquipmentDetailsContent() {
                 </InfoCard>
 
                 {/* Inventory & Status Card */}
-                <InfoCard 
-                  title="Inventory & Status" 
-                  icon={Tag} 
+                <InfoCard
+                  title="Inventory & Status"
+                  icon={Tag}
                   section="inventory"
                   isEditing={editingSection === "inventory"}
                   isSaving={saving === "inventory"}
@@ -766,10 +815,10 @@ function EquipmentDetailsContent() {
                   {type === "operational" && <InfoItem label="Damage Status" field="damage_status" value={editData.damage_status} section="inventory" isEditing={editingSection === "inventory"} onUpdate={updateField} />}
                   {type !== "operational" && <InfoItem label="Location" field="location" value={editData.location} section="inventory" isEditing={editingSection === "inventory"} onUpdate={updateField} />}
                   {type === "operational" && (
-                    <InfoItem 
-                      label="Date Acquired" 
-                      field="date_acquired" 
-                      value={editData.date_acquired} 
+                    <InfoItem
+                      label="Date Acquired"
+                      field="date_acquired"
+                      value={editData.date_acquired}
                       type="date"
                       section="inventory"
                       isEditing={editingSection === "inventory"}
@@ -780,9 +829,9 @@ function EquipmentDetailsContent() {
 
                 {/* Pricing Card (for-sale and package only) */}
                 {(type === "for-sale" || type === "package") && (
-                  <InfoCard 
-                    title="Pricing Information" 
-                    icon={DollarSign} 
+                  <InfoCard
+                    title="Pricing Information"
+                    icon={DollarSign}
                     section="pricing"
                     isEditing={editingSection === "pricing"}
                     isSaving={saving === "pricing"}
@@ -803,7 +852,7 @@ function EquipmentDetailsContent() {
                         </>
                       )
                     ) : (
-                      <PricingChart 
+                      <PricingChart
                         productId={id || undefined}
                         supplierCost={type === "for-sale" ? editData.supplier_cost : undefined}
                         cost={type === "package" ? editData.cost : undefined}
@@ -816,9 +865,9 @@ function EquipmentDetailsContent() {
 
                 {/* Supplier Information Card (for-sale and package only) */}
                 {(type === "for-sale" || type === "package") && (
-                  <InfoCard 
-                    title="Supplier Information" 
-                    icon={Building2} 
+                  <InfoCard
+                    title="Supplier Information"
+                    icon={Building2}
                     section="supplier"
                     isEditing={editingSection === "supplier"}
                     isSaving={saving === "supplier"}
@@ -833,15 +882,15 @@ function EquipmentDetailsContent() {
 
                 {/* Identification Card */}
                 {(equipment.qr_code || equipment.barcode || equipment.serial_number) && (
-                  <InfoCard 
-                    title="Identification" 
-                    icon={Hash} 
+                  <InfoCard
+                    title="Identification"
+                    icon={Hash}
                     section="identification"
                     isEditing={false}
                     isSaving={false}
-                    onEdit={() => {}}
-                    onCancel={() => {}}
-                    onSave={() => {}}
+                    onEdit={() => { }}
+                    onCancel={() => { }}
+                    onSave={() => { }}
                   >
                     <div className="flex flex-col gap-3">
                       <button
@@ -864,22 +913,22 @@ function EquipmentDetailsContent() {
 
                 {/* Quantity Usage Card */}
                 {usageData && (usageData.used_in_projects > 0 || usageData.borrowed > 0) && (
-                  <InfoCard 
-                    title="Quantity Usage" 
-                    icon={TrendingUp} 
+                  <InfoCard
+                    title="Quantity Usage"
+                    icon={TrendingUp}
                     section="usage"
                     isEditing={false}
                     isSaving={false}
-                    onEdit={() => {}}
-                    onCancel={() => {}}
-                    onSave={() => {}}
+                    onEdit={() => { }}
+                    onCancel={() => { }}
+                    onSave={() => { }}
                   >
                     <div className="space-y-4">
                       {/* Summary */}
                       <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                            {editData.quantity - usageData.used_in_projects - usageData.borrowed}
+                            {((editData?.quantity ?? 0) - usageData.used_in_projects - usageData.borrowed)}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Available</div>
                         </div>
@@ -972,22 +1021,22 @@ function EquipmentDetailsContent() {
 
                 {/* Quantity Usage Card */}
                 {usageData && (usageData.used_in_projects > 0 || usageData.borrowed > 0) && (
-                  <InfoCard 
-                    title="Quantity Usage" 
-                    icon={TrendingUp} 
+                  <InfoCard
+                    title="Quantity Usage"
+                    icon={TrendingUp}
                     section="usage"
                     isEditing={false}
                     isSaving={false}
-                    onEdit={() => {}}
-                    onCancel={() => {}}
-                    onSave={() => {}}
+                    onEdit={() => { }}
+                    onCancel={() => { }}
+                    onSave={() => { }}
                   >
                     <div className="space-y-4">
                       {/* Summary */}
                       <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                            {editData.quantity - usageData.used_in_projects - usageData.borrowed}
+                            {((editData?.quantity ?? 0) - usageData.used_in_projects - usageData.borrowed)}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Available</div>
                         </div>
@@ -1080,9 +1129,9 @@ function EquipmentDetailsContent() {
 
                 {/* Description Card */}
                 {((type === "for-sale" && editData.description) || (type === "package" && editData.package_description)) && (
-                  <InfoCard 
-                    title="Description" 
-                    icon={Tag} 
+                  <InfoCard
+                    title="Description"
+                    icon={Tag}
                     section="description"
                     isEditing={editingSection === "description"}
                     isSaving={saving === "description"}
@@ -1090,10 +1139,10 @@ function EquipmentDetailsContent() {
                     onCancel={handleCancel}
                     onSave={() => handleSave("description")}
                   >
-                    <InfoItem 
-                      label="Description" 
-                      field={type === "for-sale" ? "description" : "package_description"} 
-                      value={type === "for-sale" ? editData.description : editData.package_description} 
+                    <InfoItem
+                      label="Description"
+                      field={type === "for-sale" ? "description" : "package_description"}
+                      value={type === "for-sale" ? editData.description : editData.package_description}
                       type="textarea"
                       section="description"
                       isEditing={editingSection === "description"}
@@ -1105,15 +1154,15 @@ function EquipmentDetailsContent() {
                 {/* Images Card */}
                 {equipment.images && equipment.images.length > 0 && (
                   <div className="lg:col-span-2">
-                    <InfoCard 
-                      title="Images" 
-                      icon={Box} 
+                    <InfoCard
+                      title="Images"
+                      icon={Box}
                       section="images"
                       isEditing={false}
                       isSaving={false}
-                      onEdit={() => {}}
-                      onCancel={() => {}}
-                      onSave={() => {}}
+                      onEdit={() => { }}
+                      onCancel={() => { }}
+                      onSave={() => { }}
                     >
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {equipment.images.map((image: string, index: number) => (
@@ -1133,18 +1182,18 @@ function EquipmentDetailsContent() {
                 {/* Package Contents Card */}
                 {type === "package" && equipment.package_contents && equipment.package_contents.length > 0 && (
                   <div className="lg:col-span-2">
-                    <InfoCard 
-                      title="Package Contents" 
-                      icon={Package} 
+                    <InfoCard
+                      title="Package Contents"
+                      icon={Package}
                       section="contents"
                       isEditing={false}
                       isSaving={false}
-                      onEdit={() => {}}
-                      onCancel={() => {}}
-                      onSave={() => {}}
+                      onEdit={() => { }}
+                      onCancel={() => { }}
+                      onSave={() => { }}
                     >
                       <div className="space-y-3">
-                        {equipment.package_contents.map((item: any, index: number) => (
+                        {equipment.package_contents.map((item: PackageContentItem, index: number) => (
                           <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                               <div>
