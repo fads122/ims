@@ -247,7 +247,7 @@ function ItemContent() {
   );
 
   return (
-    <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+    <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">

@@ -329,7 +329,7 @@ function PartsPickerContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -341,7 +341,7 @@ function PartsPickerContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
@@ -419,11 +419,10 @@ function PartsPickerContent() {
                         variant={selectedCategory === "all" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSelectedCategory("all")}
-                        className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 ${
-                          selectedCategory === "all" 
-                            ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
-                            : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }`}
+                        className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 ${selectedCategory === "all"
+                          ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+                          : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          }`}
                       >
                         All
                       </Button>
@@ -435,21 +434,19 @@ function PartsPickerContent() {
                             variant={selectedCategory === category ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSelectedCategory(category)}
-                            className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 ${
-                              selectedCategory === category
-                                ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
-                                : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                            }`}
+                            className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 ${selectedCategory === category
+                              ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+                              : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                              }`}
                           >
                             <span className="truncate max-w-[80px] sm:max-w-none">{category}</span>
                             {count > 0 && (
-                              <Badge 
-                                variant="secondary" 
-                                className={`ml-1 sm:ml-1.5 text-[9px] sm:text-xs px-1 sm:px-1.5 py-0 ${
-                                  selectedCategory === category
-                                    ? "bg-white/20 dark:bg-gray-900/20 text-white dark:text-gray-900"
-                                    : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                                }`}
+                              <Badge
+                                variant="secondary"
+                                className={`ml-1 sm:ml-1.5 text-[9px] sm:text-xs px-1 sm:px-1.5 py-0 ${selectedCategory === category
+                                  ? "bg-white/20 dark:bg-gray-900/20 text-white dark:text-gray-900"
+                                  : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  }`}
                               >
                                 {count}
                               </Badge>
@@ -502,15 +499,14 @@ function PartsPickerContent() {
                   {paginatedParts.map((part) => {
                     const isSelected = selectedProducts.some((p) => p.id === part.id);
                     const stockStatus = part.quantity === 0 ? "out" : part.quantity < 10 ? "low" : "in";
-                    
+
                     return (
                       <Card
                         key={part.id}
-                        className={`bg-white dark:bg-gray-800 border transition-colors ${
-                          isSelected 
-                            ? "border-blue-500 dark:border-blue-400" 
-                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                        }`}
+                        className={`bg-white dark:bg-gray-800 border transition-colors ${isSelected
+                          ? "border-blue-500 dark:border-blue-400"
+                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                          }`}
                       >
                         <CardContent className="p-0">
                           {/* Product Image Section */}
@@ -525,8 +521,8 @@ function PartsPickerContent() {
                               <Box className="w-12 h-12 text-gray-300 dark:text-gray-700" />
                             )}
                             {part.is_package && (
-                              <Badge 
-                                variant="secondary" 
+                              <Badge
+                                variant="secondary"
                                 className="absolute top-2 right-2 text-xs"
                               >
                                 <Package className="w-3 h-3 mr-1" />
@@ -569,7 +565,7 @@ function PartsPickerContent() {
                                 <Badge
                                   variant={
                                     stockStatus === "out" ? "destructive" :
-                                    stockStatus === "low" ? "secondary" : "default"
+                                      stockStatus === "low" ? "secondary" : "default"
                                   }
                                   className="text-[10px] sm:text-xs"
                                 >
@@ -696,11 +692,10 @@ function PartsPickerContent() {
                           </div>
                           <div className="text-xs sm:text-sm">
                             <span className="text-gray-500 dark:text-gray-400">Total: </span>
-                            <span className={`font-medium ${
-                              product.selectedQuantity > (product.quantity || 0)
-                                ? "text-red-600 dark:text-red-400"
-                                : "text-blue-600 dark:text-blue-400"
-                            }`}>
+                            <span className={`font-medium ${product.selectedQuantity > (product.quantity || 0)
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-blue-600 dark:text-blue-400"
+                              }`}>
                               ₱{(product.price * product.selectedQuantity).toLocaleString()}
                             </span>
                           </div>
@@ -709,8 +704,8 @@ function PartsPickerContent() {
                             <Badge
                               variant={
                                 product.quantity === 0 ? "destructive" :
-                                product.selectedQuantity > product.quantity ? "destructive" :
-                                product.quantity < 10 ? "secondary" : "default"
+                                  product.selectedQuantity > product.quantity ? "destructive" :
+                                    product.quantity < 10 ? "secondary" : "default"
                               }
                               className="text-[10px] sm:text-xs"
                             >
@@ -743,11 +738,10 @@ function PartsPickerContent() {
                               const newQuantity = parseInt(e.target.value) || 1;
                               handleQuantityChange(product.id, newQuantity);
                             }}
-                            className={`w-14 sm:w-16 h-8 sm:h-9 text-center text-xs sm:text-sm font-medium ${
-                              product.selectedQuantity > (product.quantity || 0)
-                                ? "border-red-500 bg-red-50 dark:bg-red-900/20 dark:border-red-500"
-                                : "border-gray-200 dark:border-gray-700"
-                            }`}
+                            className={`w-14 sm:w-16 h-8 sm:h-9 text-center text-xs sm:text-sm font-medium ${product.selectedQuantity > (product.quantity || 0)
+                              ? "border-red-500 bg-red-50 dark:bg-red-900/20 dark:border-red-500"
+                              : "border-gray-200 dark:border-gray-700"
+                              }`}
                           />
                           {product.quantity !== undefined && (
                             <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">

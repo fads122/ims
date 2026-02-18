@@ -1,18 +1,4 @@
-import fs from "fs";
-import path from "path";
-
-const DATA_DIR = path.join(process.cwd(), "data");
-const USERS_FILE = path.join(DATA_DIR, "users.json");
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-// Ensure users file exists
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2));
-}
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 export interface User {
   id: string;
@@ -21,34 +7,74 @@ export interface User {
   createdAt: string;
 }
 
-export function getUsers(): User[] {
-  try {
-    const data = fs.readFileSync(USERS_FILE, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
+type DbUser = {
+  id: string;
+  email: string;
+  password: string;
+  created_at: string;
+};
+
+function getSupabase(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "Missing Supabase env: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Run create-users-table.sql in Supabase SQL Editor first."
+    );
   }
+  return createClient(url, key);
 }
 
-export function saveUsers(users: User[]): void {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
-export function findUserByEmail(email: string): User | undefined {
-  const users = getUsers();
-  return users.find((user) => user.email.toLowerCase() === email.toLowerCase());
-}
-
-export function createUser(email: string, hashedPassword: string): User {
-  const users = getUsers();
-  const newUser: User = {
-    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-    email: email.toLowerCase(),
-    password: hashedPassword,
-    createdAt: new Date().toISOString(),
+function toUser(row: DbUser): User {
+  return {
+    id: row.id,
+    email: row.email,
+    password: row.password,
+    createdAt: row.created_at,
   };
-  users.push(newUser);
-  saveUsers(users);
-  return newUser;
 }
 
+export async function findUserByEmail(email: string): Promise<User | null> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("users")
+    .select("id, email, password, created_at")
+    .eq("email", email.trim().toLowerCase())
+    .maybeSingle();
+
+  if (error) {
+    console.error("findUserByEmail error:", error);
+    throw error;
+  }
+  return data ? toUser(data as DbUser) : null;
+}
+
+export async function createUser(
+  email: string,
+  hashedPassword: string
+): Promise<User> {
+  const supabase = getSupabase();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const { data, error } = await supabase
+    .from("users")
+    .insert({
+      email: normalizedEmail,
+      password: hashedPassword,
+    })
+    .select("id, email, password, created_at")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      // unique_violation
+      const err = new Error("An account with this email already exists");
+      (err as Error & { code?: string }).code = "DUPLICATE_EMAIL";
+      throw err;
+    }
+    console.error("createUser error:", error);
+    throw error;
+  }
+
+  return toUser(data as DbUser);
+}

@@ -243,7 +243,7 @@ function SupplierProfileContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -256,7 +256,7 @@ function SupplierProfileContent() {
   if (error || !supplier) {
     return (
       <SidebarProvider>
-        <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+        <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
           <AppSidebar />
           <SidebarInset className="flex flex-col bg-transparent">
             <TopHeader userEmail={user.email} />
@@ -291,7 +291,7 @@ function SupplierProfileContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
@@ -382,11 +382,10 @@ function SupplierProfileContent() {
                       ) : (
                         <Badge
                           variant="outline"
-                          className={`${
-                            supplier.status === "Active"
-                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-600"
-                          }`}
+                          className={`${supplier.status === "Active"
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-600"
+                            }`}
                         >
                           {supplier.status === "Active" ? (
                             <CheckCircle className="w-3 h-3 mr-1" />
@@ -705,11 +704,10 @@ function SupplierProfileContent() {
                         ) : (
                           <Badge
                             variant="outline"
-                            className={`${
-                              supplier.status === "Active"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-600"
-                            }`}
+                            className={`${supplier.status === "Active"
+                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-600"
+                              }`}
                           >
                             {supplier.status === "Active" ? (
                               <CheckCircle className="w-3 h-3 mr-1" />
@@ -747,11 +745,10 @@ function SupplierProfileContent() {
                                   {[...Array(5)].map((_, i) => (
                                     <Star
                                       key={i}
-                                      className={`w-4 h-4 ${
-                                        i < Math.floor(supplier.rating!)
-                                          ? "text-yellow-400 fill-yellow-400"
-                                          : "text-gray-300 dark:text-gray-600"
-                                      }`}
+                                      className={`w-4 h-4 ${i < Math.floor(supplier.rating!)
+                                        ? "text-yellow-400 fill-yellow-400"
+                                        : "text-gray-300 dark:text-gray-600"
+                                        }`}
                                     />
                                   ))}
                                 </div>
@@ -804,7 +801,7 @@ function SupplierProfileContent() {
 export default function SupplierProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     }>

@@ -19,7 +19,7 @@ function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn("flex items-center gap-2 text-sm mb-4", className)}
+      className={cn("flex items-center gap-2 text-sm", className)}
     >
       <Link
         href="/dashboard"

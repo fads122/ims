@@ -158,28 +158,28 @@ function ProjectProposalsContent() {
       }
 
       const response = await fetch(`/api/proposals?${params.toString()}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         const errorMessage = errorData.error || "Failed to fetch proposals";
-        
+
         // If table doesn't exist, show helpful message
         if (errorMessage.includes("does not exist")) {
           console.error("Database tables not found. Please run the SQL schema in Supabase.");
           alert("Database tables not found. Please run the SQL schema (create-project-proposals-tables.sql) in your Supabase dashboard.");
           return;
         }
-        
+
         throw new Error(errorMessage);
       }
 
       const result = await response.json();
-      
+
       // Check if result has error
       if (result.error) {
         throw new Error(result.error);
       }
-      
+
       setProposals(result.data || []);
       setFilteredProposals(result.data || []);
       setTotalPages(result.pagination?.totalPages || 1);
@@ -253,12 +253,12 @@ function ProjectProposalsContent() {
       if (!response.ok) throw new Error("Failed to delete proposal");
 
       setIsDeleteModalOpen(false);
-      
+
       // Log activity
       if (selectedProposal?.id) {
         await logProposalActivity("delete", selectedProposal.id, selectedProposal.proposal_number, selectedProposal.title);
       }
-      
+
       setSelectedProposal(null);
       loadProposals();
     } catch (error: any) {
@@ -295,49 +295,49 @@ function ProjectProposalsContent() {
       // Header with colored background
       doc.setFillColor(...primaryColor);
       doc.rect(0, 0, 210, 40, "F");
-      
+
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
       doc.text("QUANBY SOLUTIONS", 105, 18, { align: "center" });
-      
+
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text("123 Business St, Makati City, Philippines", 105, 26, { align: "center" });
       doc.text("Email: info@quanby.com | Phone: +63 2 1234 5678", 105, 32, { align: "center" });
-      
+
       y = 50;
 
       // Proposal Title Section with accent background
       doc.setFillColor(...accentColor);
       doc.rect(0, y - 5, 210, 15, "F");
-      
+
       doc.setTextColor(...darkGray);
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
       doc.text("PROJECT PROPOSAL", 105, y + 5, { align: "center" });
-      
+
       y += 20;
 
       // Proposal Details Box
       doc.setDrawColor(...borderGray);
       doc.setFillColor(...lightGray);
       doc.roundedRect(14, y, 182, 30, 3, 3, "FD");
-      
+
       doc.setTextColor(...darkGray);
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text("Proposal Details", 20, y + 8);
-      
+
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text(`Proposal #: ${fullProposal.proposal_number}`, 20, y + 15);
       doc.text(`Date: ${formatDate(fullProposal.proposal_date)}`, 110, y + 15);
-      
+
       if (fullProposal.valid_until) {
         doc.text(`Valid Until: ${formatDate(fullProposal.valid_until)}`, 20, y + 22);
       }
-      
+
       // Status badge
       const statusColors: { [key: string]: number[] } = {
         draft: [128, 128, 128],
@@ -358,18 +358,18 @@ function ProjectProposalsContent() {
         y + 23,
         { align: "center" }
       );
-      
+
       y += 35;
 
       // Client Information Box
       doc.setTextColor(...darkGray);
       doc.setFillColor(...lightGray);
       doc.roundedRect(14, y, 88, 40, 3, 3, "FD");
-      
+
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text("Client Information", 20, y + 8);
-      
+
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
       let clientY = y + 15;
@@ -397,23 +397,23 @@ function ProjectProposalsContent() {
       if (fullProposal.description) {
         doc.setFillColor(...lightGray);
         doc.roundedRect(108, y, 88, 40, 3, 3, "FD");
-        
+
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
         doc.text("Description", 114, y + 8);
-        
+
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
         const descLines = doc.splitTextToSize(fullProposal.description, 80);
         doc.text(descLines, 114, y + 15);
       }
-      
+
       y += 45;
 
       // Items Table with autoTable
       if (fullProposal.items && fullProposal.items.length > 0) {
         const approvedItems = fullProposal.items.filter((item: ProposalItem) => item.status !== "rejected");
-        
+
         if (approvedItems.length > 0) {
           const tableData = approvedItems.map((item: ProposalItem) => [
             item.item_name || "N/A",
@@ -452,7 +452,7 @@ function ProjectProposalsContent() {
             },
             margin: { left: 14, right: 14 },
           });
-          
+
           y = (doc as any).lastAutoTable.finalY + 15;
         }
       }
@@ -460,17 +460,17 @@ function ProjectProposalsContent() {
       // Financial Summary Box
       doc.setFillColor(...lightGray);
       doc.roundedRect(14, y, 182, 50, 3, 3, "FD");
-      
+
       doc.setTextColor(...darkGray);
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.text("Financial Summary", 20, y + 10);
-      
+
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       const rightAlign = 180;
       let finY = y + 18;
-      
+
       doc.text("Subtotal:", 20, finY);
       doc.text(
         `₱${fullProposal.subtotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
@@ -507,7 +507,7 @@ function ProjectProposalsContent() {
       // Total Amount with accent background
       doc.setFillColor(...accentColor);
       doc.roundedRect(14, finY - 5, 182, 12, 3, 3, "F");
-      
+
       doc.setTextColor(...darkGray);
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
@@ -518,7 +518,7 @@ function ProjectProposalsContent() {
         finY + 5,
         { align: "right" }
       );
-      
+
       y = finY + 20;
 
       // Terms and Conditions
@@ -536,12 +536,12 @@ function ProjectProposalsContent() {
 
         doc.setFillColor(...lightGray);
         doc.roundedRect(14, y, 182, 60, 3, 3, "FD");
-        
+
         doc.setTextColor(...darkGray);
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text("Terms and Conditions", 20, y + 10);
-        
+
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
         let termsY = y + 18;
@@ -592,7 +592,7 @@ function ProjectProposalsContent() {
         doc.setPage(i);
         doc.setDrawColor(...borderGray);
         doc.line(14, 280, 196, 280);
-        
+
         doc.setTextColor(128, 128, 128);
         doc.setFontSize(8);
         doc.setFont("helvetica", "italic");
@@ -605,7 +605,7 @@ function ProjectProposalsContent() {
       }
 
       doc.save(`Proposal-${fullProposal.proposal_number}.pdf`);
-      
+
       // Log activity
       await logProposalActivity("export", proposal.id, fullProposal.proposal_number, fullProposal.title);
     } catch (error: any) {
@@ -637,7 +637,7 @@ function ProjectProposalsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -649,7 +649,7 @@ function ProjectProposalsContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
@@ -709,11 +709,10 @@ function ProjectProposalsContent() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setViewMode("cards")}
-                    className={`h-8 px-3 ${
-                      viewMode === "cards"
-                        ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    }`}
+                    className={`h-8 px-3 ${viewMode === "cards"
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      }`}
                   >
                     <LayoutGrid className="w-4 h-4" />
                   </Button>
@@ -721,11 +720,10 @@ function ProjectProposalsContent() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setViewMode("table")}
-                    className={`h-8 px-3 ${
-                      viewMode === "table"
-                        ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    }`}
+                    className={`h-8 px-3 ${viewMode === "table"
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      }`}
                   >
                     <Table2 className="w-4 h-4" />
                   </Button>
@@ -738,13 +736,13 @@ function ProjectProposalsContent() {
                   <FileText className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
                   <p className="text-gray-500 dark:text-gray-400 text-lg">No proposals found</p>
                   <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-                    {searchQuery || statusFilter !== "all" 
-                      ? "Try adjusting your search or filters" 
+                    {searchQuery || statusFilter !== "all"
+                      ? "Try adjusting your search or filters"
                       : "Create your first proposal to get started"}
                   </p>
                 </div>
               ) : viewMode === "cards" ? (
-                <div 
+                <div
                   key="cards-view"
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-slide-up"
                 >
@@ -878,7 +876,7 @@ function ProjectProposalsContent() {
                 </div>
               ) : (
                 /* Table View */
-                <div 
+                <div
                   key="table-view"
                   className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden animate-fade-in-slide-up"
                 >
@@ -1200,11 +1198,10 @@ function ProjectProposalsContent() {
                         {viewProposalDetails.items.map((item, index) => {
                           const isRejected = item.status === "rejected";
                           return (
-                            <tr 
-                              key={index} 
-                              className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
-                                isRejected ? "opacity-60" : ""
-                              }`}
+                            <tr
+                              key={index}
+                              className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${isRejected ? "opacity-60" : ""
+                                }`}
                             >
                               <td className={`px-4 py-3 text-sm ${isRejected ? "text-gray-500 dark:text-gray-400" : "text-gray-900 dark:text-white"}`}>
                                 <span className={isRejected ? "line-through" : ""}>{item.item_name}</span>

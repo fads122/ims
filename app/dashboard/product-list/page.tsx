@@ -49,7 +49,7 @@ export default function ProductListPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function ProductListPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
@@ -101,8 +101,8 @@ export default function ProductListPage() {
                       className="pl-9 h-10 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                     />
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-10 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600"
                   >
                     <Filter className="w-4 h-4 mr-2" />
@@ -119,8 +119,8 @@ export default function ProductListPage() {
       </div>
 
       {/* Add Product Modal */}
-      <AddProductModal 
-        isOpen={isModalOpen} 
+      <AddProductModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onProductAdded={() => setRefreshTrigger((prev) => prev + 1)}
       />

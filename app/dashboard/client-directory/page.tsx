@@ -198,7 +198,7 @@ function ClientDirectoryContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -214,7 +214,7 @@ function ClientDirectoryContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />

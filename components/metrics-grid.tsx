@@ -51,8 +51,8 @@ export default function MetricsGrid() {
       title: "Total Suppliers",
       value: loading ? "..." : stats.total_suppliers.toString(),
       icon: Truck,
-      iconColor: "text-blue-600 dark:text-blue-400",
-      iconBg: "bg-blue-50 dark:bg-blue-900/20",
+      iconColor: "text-gray-600 dark:text-gray-400",
+      iconBg: "bg-gray-50 dark:bg-gray-800/50",
       linkText: "View All",
       href: "/dashboard/supplier-list",
     },
@@ -60,8 +60,8 @@ export default function MetricsGrid() {
       title: "Total Products",
       value: loading ? "..." : stats.total_products.toString(),
       icon: Package,
-      iconColor: "text-green-600 dark:text-green-400",
-      iconBg: "bg-green-50 dark:bg-green-900/20",
+      iconColor: "text-gray-600 dark:text-gray-400",
+      iconBg: "bg-gray-50 dark:bg-gray-800/50",
       linkText: "View All",
       href: "/dashboard/product-list",
     },
@@ -69,8 +69,8 @@ export default function MetricsGrid() {
       title: "Borrowed",
       value: loading ? "..." : stats.borrowed.toString(),
       icon: Archive,
-      iconColor: "text-orange-600 dark:text-orange-400",
-      iconBg: "bg-orange-50 dark:bg-orange-900/20",
+      iconColor: "text-gray-600 dark:text-gray-400",
+      iconBg: "bg-gray-50 dark:bg-gray-800/50",
       linkText: "View All",
       href: "/dashboard/item",
     },
@@ -78,8 +78,8 @@ export default function MetricsGrid() {
       title: "Used in Projects",
       value: loading ? "..." : stats.used_in_projects.toString(),
       icon: Wrench,
-      iconColor: "text-purple-600 dark:text-purple-400",
-      iconBg: "bg-purple-50 dark:bg-purple-900/20",
+      iconColor: "text-gray-600 dark:text-gray-400",
+      iconBg: "bg-gray-50 dark:bg-gray-800/50",
       linkText: "View All",
       href: "/dashboard/project-proposals",
     },
@@ -87,8 +87,8 @@ export default function MetricsGrid() {
       title: "Top Ranked Supplier",
       value: loading ? "..." : stats.top_supplier,
       icon: Trophy,
-      iconColor: "text-yellow-600 dark:text-yellow-400",
-      iconBg: "bg-yellow-50 dark:bg-yellow-900/20",
+      iconColor: "text-gray-600 dark:text-gray-400",
+      iconBg: "bg-gray-50 dark:bg-gray-800/50",
       linkText: "View Ranking",
       href: "/dashboard/supplier-list",
     },
@@ -102,19 +102,33 @@ export default function MetricsGrid() {
           <Link
             key={metric.title}
             href={metric.href}
-            className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all duration-200"
+            className="group relative bg-white dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-lg p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-200"
           >
-            <div className="flex items-start justify-between mb-3">
-              <div className={`w-10 h-10 ${metric.iconBg} rounded-lg flex items-center justify-center`}>
-                <Icon className={`w-5 h-5 ${metric.iconColor}`} />
+            <div className="flex flex-col h-full">
+              {/* Icon - More subtle */}
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-10 h-10 ${metric.iconBg} rounded-lg flex items-center justify-center border border-gray-200/50 dark:border-gray-700/50`}>
+                  <Icon className={`w-5 h-5 ${metric.iconColor}`} strokeWidth={1.5} />
+                </div>
               </div>
-            </div>
-            <div className="mb-3">
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">{metric.value}</p>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{metric.title}</p>
-            </div>
-            <div className="text-xs font-medium text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
-              {metric.linkText} →
+              
+              {/* Value */}
+              <div className="mb-1.5">
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
+                  {metric.value}
+                </p>
+              </div>
+              
+              {/* Title */}
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3.5 uppercase tracking-wide">
+                {metric.title}
+              </p>
+              
+              {/* Link - More subtle */}
+              <div className="flex items-center text-xs font-medium text-gray-500 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors mt-auto pt-3 border-t border-gray-100 dark:border-gray-700/50">
+                <span>{metric.linkText}</span>
+                <span className="ml-1.5 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">→</span>
+              </div>
             </div>
           </Link>
         );

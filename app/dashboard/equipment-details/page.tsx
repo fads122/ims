@@ -723,7 +723,7 @@ function EquipmentDetailsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900 flex items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Loading...</div>
       </div>
     );
@@ -735,7 +735,7 @@ function EquipmentDetailsContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
@@ -925,7 +925,7 @@ function EquipmentDetailsContent() {
                   >
                     <div className="space-y-4">
                       {/* Summary */}
-                      <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                      <div className="grid grid-cols-3 gap-4 p-3 bg-[#FFFFFF] dark:bg-gray-900/50 rounded-lg">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-gray-900 dark:text-white">
                             {((editData?.quantity ?? 0) - usageData.used_in_projects - usageData.borrowed)}
@@ -1033,7 +1033,7 @@ function EquipmentDetailsContent() {
                   >
                     <div className="space-y-4">
                       {/* Summary */}
-                      <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                      <div className="grid grid-cols-3 gap-4 p-3 bg-[#FFFFFF] dark:bg-gray-900/50 rounded-lg">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-gray-900 dark:text-white">
                             {((editData?.quantity ?? 0) - usageData.used_in_projects - usageData.borrowed)}
@@ -1249,7 +1249,7 @@ function EquipmentDetailsContent() {
 export default function EquipmentDetailsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900 flex items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Loading...</div>
       </div>
     }>

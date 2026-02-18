@@ -183,7 +183,7 @@ export default function CostUpdatePage() {
       selectedUpdates.forEach((id) => {
         const item = manualUpdateData.get(id);
         const original = allEquipment.find((eq) => eq.id === id);
-        
+
         // Compare updated cost with original cost
         if (item && original && item.supplier_cost !== original.supplier_cost) {
           updates.push({
@@ -355,7 +355,7 @@ export default function CostUpdatePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -367,7 +367,7 @@ export default function CostUpdatePage() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
@@ -497,15 +497,15 @@ export default function CostUpdatePage() {
                                       item.match_confidence === "high"
                                         ? "default"
                                         : item.match_confidence === "medium"
-                                        ? "secondary"
-                                        : "outline"
+                                          ? "secondary"
+                                          : "outline"
                                     }
                                   >
                                     {item.match_confidence === "high"
                                       ? "High Match"
                                       : item.match_confidence === "medium"
-                                      ? "Medium Match"
-                                      : "No Match"}
+                                        ? "Medium Match"
+                                        : "No Match"}
                                   </Badge>
                                 </div>
                                 {item.matched_equipment.length > 0 && (
@@ -645,9 +645,8 @@ export default function CostUpdatePage() {
                                 return (
                                   <tr
                                     key={item.id}
-                                    className={`border-b border-gray-200 dark:border-gray-700 ${
-                                      hasChanged ? "bg-blue-50/50 dark:bg-blue-900/10" : ""
-                                    }`}
+                                    className={`border-b border-gray-200 dark:border-gray-700 ${hasChanged ? "bg-blue-50/50 dark:bg-blue-900/10" : ""
+                                      }`}
                                   >
                                     <td className="px-4 py-3">
                                       <input
@@ -797,11 +796,10 @@ export default function CostUpdatePage() {
                                       New: ₱{item.new_data.supplier_cost.toFixed(2)}
                                     </div>
                                     <div
-                                      className={`flex items-center gap-1 ${
-                                        isIncrease
-                                          ? "text-red-600 dark:text-red-400"
-                                          : "text-green-600 dark:text-green-400"
-                                      }`}
+                                      className={`flex items-center gap-1 ${isIncrease
+                                        ? "text-red-600 dark:text-red-400"
+                                        : "text-green-600 dark:text-green-400"
+                                        }`}
                                     >
                                       {isIncrease ? (
                                         <TrendingUp className="w-3 h-3" />
@@ -823,15 +821,15 @@ export default function CostUpdatePage() {
 
                     {/* Buttons - Always visible at bottom */}
                     <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setIsPreviewOpen(false)}
                         className="w-full sm:w-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        onClick={handleApply} 
+                      <Button
+                        onClick={handleApply}
                         disabled={applying}
                         className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                       >

@@ -132,7 +132,7 @@ function SalesOrderContent() {
       }
 
       const response = await fetch(`/api/delivery-receipts?${params.toString()}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch delivery receipts");
@@ -309,44 +309,44 @@ function SalesOrderContent() {
       // Header
       doc.setFillColor(...primaryColor);
       doc.rect(0, 0, 210, 40, "F");
-      
+
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
       doc.text("QUANBY SOLUTIONS", 105, 18, { align: "center" });
-      
+
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text("123 Business St, Makati City, Philippines", 105, 26, { align: "center" });
       doc.text("Email: info@quanby.com | Phone: +63 2 1234 5678", 105, 32, { align: "center" });
-      
+
       y = 50;
 
       // Receipt Title
       doc.setFillColor(...accentColor);
       doc.rect(0, y - 5, 210, 15, "F");
-      
+
       doc.setTextColor(...darkGray);
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
       doc.text("DELIVERY RECEIPT", 105, y + 5, { align: "center" });
-      
+
       y += 20;
 
       // Receipt Details
       doc.setFillColor(...lightGray);
       doc.roundedRect(14, y, 182, 30, 3, 3, "FD");
-      
+
       doc.setTextColor(...darkGray);
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text("Receipt Details", 20, y + 8);
-      
+
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text(`Receipt ID: ${receipt.id.substring(0, 8).toUpperCase()}`, 20, y + 15);
       doc.text(`Date: ${formatDate(receipt.delivery_date)}`, 110, y + 15);
-      
+
       // Status badge
       const statusColor = receipt.status === "Delivered" ? [34, 197, 94] : [251, 191, 36];
       doc.setFillColor(...statusColor);
@@ -355,18 +355,18 @@ function SalesOrderContent() {
       doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
       doc.text(receipt.status.toUpperCase(), 170, y + 23, { align: "center" });
-      
+
       y += 35;
 
       // Project Information
       doc.setFillColor(...lightGray);
       doc.roundedRect(14, y, 88, 40, 3, 3, "FD");
-      
+
       doc.setTextColor(...darkGray);
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text("Project Information", 20, y + 8);
-      
+
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
       doc.text(`Project: ${receipt.project_name}`, 20, y + 15);
@@ -381,11 +381,11 @@ function SalesOrderContent() {
       // Delivery Information
       doc.setFillColor(...lightGray);
       doc.roundedRect(108, y, 88, 40, 3, 3, "FD");
-      
+
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text("Delivery Information", 114, y + 8);
-      
+
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
       doc.text(`Expected: ${formatDate(receipt.delivery_date)}`, 114, y + 15);
@@ -398,7 +398,7 @@ function SalesOrderContent() {
       if (receipt.received_by) {
         doc.text(`Received by: ${receipt.received_by}`, 114, y + 36);
       }
-      
+
       y += 45;
 
       // Signature Line
@@ -418,7 +418,7 @@ function SalesOrderContent() {
         doc.setPage(i);
         doc.setDrawColor(200, 200, 200);
         doc.line(14, 280, 196, 280);
-        
+
         doc.setTextColor(128, 128, 128);
         doc.setFontSize(8);
         doc.setFont("helvetica", "italic");
@@ -431,7 +431,7 @@ function SalesOrderContent() {
       }
 
       doc.save(`Delivery-Receipt-${receipt.id.substring(0, 8)}.pdf`);
-      
+
       // Log activity
       await logGenericActivity(
         "export",
@@ -457,7 +457,7 @@ function SalesOrderContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/95 dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
+      <div className="min-h-screen bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative flex items-center justify-center">
         <div className="text-gray-900 dark:text-white">Loading...</div>
       </div>
     );
@@ -469,7 +469,7 @@ function SalesOrderContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-white/95 dark:bg-gray-900/95 transition-colors relative">
+      <div className="flex h-screen w-full bg-[#FFFFFF] dark:bg-gray-900/95 transition-colors relative">
         <AppSidebar />
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />

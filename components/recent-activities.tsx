@@ -195,24 +195,8 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
   };
 
   const getActivityColor = (activityType: string) => {
-    switch (activityType) {
-      case "create":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "update":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "delete":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "view":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-      case "export":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      case "login":
-        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
-      case "logout":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-    }
+    // Unified professional gray styling for all activity types
+    return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -354,7 +338,7 @@ export default function RecentActivities({ limit = 10 }: RecentActivitiesProps) 
                   >
                     <div className="flex-shrink-0 mt-1">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 text-xs">
+                        <AvatarFallback className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs font-medium">
                           {getUserInitials(activity.user_email)}
                         </AvatarFallback>
                       </Avatar>

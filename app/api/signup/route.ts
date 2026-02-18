@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = findUserByEmail(email);
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create user
-    const user = createUser(email, hashedPassword);
+    const user = await createUser(email, hashedPassword);
 
     // Return success (don't return the password)
     return NextResponse.json(
@@ -68,8 +68,15 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Signup error:", error);
+    const err = error as Error & { code?: string };
+    if (err.code === "DUPLICATE_EMAIL" || err.message?.includes("already exists")) {
+      return NextResponse.json(
+        { error: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { error: "An error occurred while creating your account" },
       { status: 500 }

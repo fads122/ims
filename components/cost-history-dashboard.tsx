@@ -333,8 +333,8 @@ export default function CostHistoryDashboard() {
   const getTrendClassName = (change: number | null) => {
     if (change === null) return "";
     return change >= 0
-      ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-      : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+      ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+      : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
   };
 
   return (
@@ -399,7 +399,7 @@ export default function CostHistoryDashboard() {
                       </span>
                     )}
                   </div>
-                  <p className="text-2xl font-bold" style={{ color: "#386FA4" }}>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                     ${aggregateStats.totalCost.toLocaleString()}
                   </p>
                 </div>
@@ -412,7 +412,7 @@ export default function CostHistoryDashboard() {
                       </span>
                     )}
                   </div>
-                  <p className="text-2xl font-bold" style={{ color: "#FCCA46" }}>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                     ${aggregateStats.totalSRP.toLocaleString()}
                   </p>
                 </div>
@@ -430,7 +430,7 @@ export default function CostHistoryDashboard() {
                           </span>
                         )}
                       </div>
-                      <p className="text-2xl font-bold" style={{ color: "#386FA4" }}>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                         ${(selectedEquipment.supplierCost || 0).toLocaleString()}
                       </p>
                     </div>
@@ -443,7 +443,7 @@ export default function CostHistoryDashboard() {
                           </span>
                         )}
                       </div>
-                      <p className="text-2xl font-bold" style={{ color: "#FCCA46" }}>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                         ${(selectedEquipment.srp || 0).toLocaleString()}
                       </p>
                     </div>
@@ -459,7 +459,7 @@ export default function CostHistoryDashboard() {
                           </span>
                         )}
                       </div>
-                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                         ${(selectedEquipment.cost || 0).toLocaleString()}
                       </p>
                     </div>
@@ -472,7 +472,7 @@ export default function CostHistoryDashboard() {
                           </span>
                         )}
                       </div>
-                      <p className="text-2xl font-bold" style={{ color: "#FCCA46" }}>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                         ${(selectedEquipment.srp || 0).toLocaleString()}
                       </p>
                     </div>
