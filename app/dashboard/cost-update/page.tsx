@@ -372,27 +372,35 @@ export default function CostUpdatePage() {
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
-            <div className="p-6 lg:p-8 space-y-6">
-              {/* Breadcrumbs */}
+            <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
               <Breadcrumbs />
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    Cost Update
-                  </h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    Update equipment costs via PDF import or manual editing
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setIsManualMode(!isManualMode)}
-                  variant={isManualMode ? "default" : "outline"}
-                >
-                  {isManualMode ? <FileUp className="w-4 h-4 mr-2" /> : <Edit className="w-4 h-4 mr-2" />}
-                  {isManualMode ? "PDF Import Mode" : "Manual Update Mode"}
-                </Button>
-              </div>
+              {user && (() => {
+                const todayLabel = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+                return (
+                  <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/50 backdrop-blur-md p-6">
+                    <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-tr from-emerald-500/10 via-sky-500/10 to-transparent blur-3xl" />
+                    <div className="flex items-start justify-between gap-4 relative">
+                      <div>
+                        <div className="inline-flex items-center rounded-full border border-gray-200/70 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 px-3 py-1 text-[11px] font-medium tracking-wider text-gray-600 dark:text-gray-300 uppercase">Pricing</div>
+                        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight mt-4">Cost Update</h1>
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2 max-w-3xl">Update equipment costs via PDF import or manual editing.</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">Signed in as <span className="font-medium text-gray-700 dark:text-gray-200">{user.email}</span></p>
+                      </div>
+                      <div className="flex flex-col items-end gap-3">
+                        <div className="hidden sm:flex flex-col items-end gap-2">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Today</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">{todayLabel}</span>
+                        </div>
+                        <Button onClick={() => setIsManualMode(!isManualMode)} variant={isManualMode ? "default" : "outline"}>
+                          {isManualMode ? <FileUp className="w-4 h-4 mr-2" /> : <Edit className="w-4 h-4 mr-2" />}
+                          {isManualMode ? "PDF Import Mode" : "Manual Update Mode"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Mode Toggle Info */}
               <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">

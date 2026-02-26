@@ -248,29 +248,35 @@ function BorrowFormContent() {
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader />
           <div className="flex-1 overflow-auto">
-            <div className="p-6 space-y-6">
-              {/* Breadcrumbs */}
+            <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
               <Breadcrumbs />
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push("/dashboard/item")}
-                    className="text-gray-600 dark:text-gray-400"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
-                  </Button>
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">New Borrow Request</h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                      Create a new equipment borrowing request
-                    </p>
+              {(() => {
+                const todayLabel = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+                return (
+                  <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/50 backdrop-blur-md p-6">
+                    <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-tr from-emerald-500/10 via-sky-500/10 to-transparent blur-3xl" />
+                    <div className="flex items-start justify-between gap-4 relative">
+                      <div className="flex items-center gap-4">
+                        <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/item")} className="text-gray-600 dark:text-gray-400 flex-shrink-0">
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Back
+                        </Button>
+                        <div>
+                          <div className="inline-flex items-center rounded-full border border-gray-200/70 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 px-3 py-1 text-[11px] font-medium tracking-wider text-gray-600 dark:text-gray-300 uppercase">Borrowing</div>
+                          <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight mt-4">New Borrow Request</h1>
+                          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2">Create a new equipment borrowing request.</p>
+                          {user && <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">Signed in as <span className="font-medium text-gray-700 dark:text-gray-200">{user.email}</span></p>}
+                        </div>
+                      </div>
+                      <div className="hidden sm:flex flex-col items-end gap-2">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Today</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{todayLabel}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Borrower Information */}

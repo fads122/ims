@@ -296,58 +296,59 @@ function SupplierProfileContent() {
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
-            <div className="p-6 lg:p-8 space-y-6">
-              {/* Breadcrumbs */}
+            <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
               <Breadcrumbs />
-              {/* Header with Back Button */}
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={() => router.push("/dashboard/supplier-list")}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              </div>
-
-              {/* Supplier Header */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white text-xl font-bold">
-                      {getInitials(isEditing ? formData.supplierName : supplier.supplier_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {isEditing ? (
-                        <Input
-                          value={formData.supplierName}
-                          onChange={(e) => handleChange("supplierName", e.target.value)}
-                          className="text-2xl font-bold h-12 flex-1 min-w-[200px]"
-                          placeholder="Supplier Name"
-                        />
-                      ) : (
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white truncate">
-                          {supplier.supplier_name}
-                        </h1>
-                      )}
-                      {!isEditing ? (
+              {supplier && user && (() => {
+                const todayLabel = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+                return (
+                  <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/50 backdrop-blur-md p-6">
+                    <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-tr from-emerald-500/10 via-sky-500/10 to-transparent blur-3xl" />
+                    <div className="flex items-start justify-between gap-4 relative">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
                         <Button
-                          onClick={handleEdit}
+                          onClick={() => router.push("/dashboard/supplier-list")}
                           variant="outline"
                           size="sm"
-                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 flex-shrink-0"
                         >
-                          <Edit className="w-4 h-4 mr-2" />
-                          Edit Supplier
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Back
                         </Button>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={handleSave}
+                        <Avatar className="h-16 w-16 border-2 border-gray-200 dark:border-gray-700 shadow-sm flex-shrink-0">
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white text-xl font-bold">
+                            {getInitials(isEditing ? formData.supplierName : supplier.supplier_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="inline-flex items-center rounded-full border border-gray-200/70 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 px-3 py-1 text-[11px] font-medium tracking-wider text-gray-600 dark:text-gray-300 uppercase mb-2">Supplier</div>
+                          <div className="flex items-center gap-3 flex-wrap">
+                            {isEditing ? (
+                              <Input
+                                value={formData.supplierName}
+                                onChange={(e) => handleChange("supplierName", e.target.value)}
+                                className="text-2xl font-bold h-12 flex-1 min-w-[200px]"
+                                placeholder="Supplier Name"
+                              />
+                            ) : (
+                              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white truncate">
+                                {supplier.supplier_name}
+                              </h1>
+                            )}
+                            {!isEditing ? (
+                              <Button
+                                onClick={handleEdit}
+                                variant="outline"
+                                size="sm"
+                                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                              >
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit Supplier
+                              </Button>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  onClick={handleSave}
                             disabled={saving}
                             size="sm"
                             className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -422,7 +423,14 @@ function SupplierProfileContent() {
                     </div>
                   </div>
                 </div>
-              </div>
+                <div className="hidden sm:flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Today</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{todayLabel}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Main Content Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

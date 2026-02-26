@@ -740,25 +740,34 @@ function EquipmentDetailsContent() {
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
-            <div className="p-6 lg:p-8 max-w-6xl mx-auto">
-              {/* Breadcrumbs */}
+            <div className="p-6 lg:p-8 max-w-7xl mx-auto">
               <Breadcrumbs />
-              {/* Header */}
-              <div className="mb-6">
-                <button
-                  onClick={() => router.push("/dashboard/product-list")}
-                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Product List
-                </button>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {type === "operational" ? editData.name : type === "for-sale" ? editData.product_brand || editData.product_model : editData.package_name}
-                  </h1>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Equipment Details</p>
-                </div>
-              </div>
+              {user && (() => {
+                const todayLabel = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+                const title = type === "operational" ? editData.name : type === "for-sale" ? editData.product_brand || editData.product_model : editData.package_name;
+                return (
+                  <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/50 backdrop-blur-md p-6 mb-6">
+                    <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-tr from-emerald-500/10 via-sky-500/10 to-transparent blur-3xl" />
+                    <div className="flex items-start justify-between gap-4 relative">
+                      <div className="min-w-0">
+                        <button onClick={() => router.push("/dashboard/product-list")} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors">
+                          <ArrowLeft className="w-4 h-4" />
+                          Back to Product List
+                        </button>
+                        <div className="inline-flex items-center rounded-full border border-gray-200/70 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 px-3 py-1 text-[11px] font-medium tracking-wider text-gray-600 dark:text-gray-300 uppercase">Equipment</div>
+                        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight mt-4 truncate">{title}</h1>
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2">Equipment Details</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">Signed in as <span className="font-medium text-gray-700 dark:text-gray-200">{user.email}</span></p>
+                      </div>
+                      <div className="hidden sm:flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Today</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{todayLabel}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

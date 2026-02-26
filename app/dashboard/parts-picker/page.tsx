@@ -346,32 +346,35 @@ function PartsPickerContent() {
         <SidebarInset className="flex flex-col bg-transparent">
           <TopHeader userEmail={user.email} />
           <div className="flex-1 overflow-auto">
-            <div className="p-6 lg:p-8 space-y-6">
-              {/* Breadcrumbs */}
+            <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
               <Breadcrumbs />
-              {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    Parts Picker
-                  </h1>
-                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-                    Search, select, and save equipment for your projects
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsViewSelectedOpen(true)}
-                    disabled={selectedProducts.length === 0}
-                    className="flex items-center gap-2 text-xs sm:text-sm w-full sm:w-auto"
-                  >
-                    <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">View Selected ({selectedProducts.length})</span>
-                    <span className="sm:hidden">Selected ({selectedProducts.length})</span>
-                  </Button>
-                </div>
-              </div>
+              {user && (() => {
+                const todayLabel = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+                return (
+                  <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/50 backdrop-blur-md p-6">
+                    <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-tr from-emerald-500/10 via-sky-500/10 to-transparent blur-3xl" />
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 relative">
+                      <div>
+                        <div className="inline-flex items-center rounded-full border border-gray-200/70 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 px-3 py-1 text-[11px] font-medium tracking-wider text-gray-600 dark:text-gray-300 uppercase">Parts</div>
+                        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight mt-4">Parts Picker</h1>
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2 max-w-3xl">Search, select, and save equipment for your projects.</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">Signed in as <span className="font-medium text-gray-700 dark:text-gray-200">{user.email}</span></p>
+                      </div>
+                      <div className="flex flex-col items-end gap-3">
+                        <div className="hidden sm:flex flex-col items-end gap-2">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Today</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">{todayLabel}</span>
+                        </div>
+                        <Button variant="outline" onClick={() => setIsViewSelectedOpen(true)} disabled={selectedProducts.length === 0} className="flex items-center gap-2">
+                          <Eye className="w-4 h-4" />
+                          View Selected ({selectedProducts.length})
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Search and Filters */}
               <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
